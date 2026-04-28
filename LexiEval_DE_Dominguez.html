@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexiEval DE</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;color:#111;background:#f5f4ef;}
+#wrap{display:grid;grid-template-columns:320px 1fr;min-height:100vh;}
+#lp{border-right:1px solid #e0ddd5;display:flex;flex-direction:column;background:#fff;max-height:100vh;}
+#tabs{display:flex;border-bottom:1px solid #e0ddd5;flex-shrink:0;}
+.tab{flex:1;padding:10px 4px;font-size:11px;text-align:center;cursor:pointer;background:transparent;color:#888;border:none;font-family:inherit;border-bottom:2px solid transparent;letter-spacing:.03em;}
+.tab.on{color:#111;border-bottom-color:#111;font-weight:600;}
+#lb{flex:1;overflow-y:auto;padding:.875rem;}
+#rp{padding:1.25rem;overflow-y:auto;max-height:100vh;}
+.srch{width:100%;padding:7px 10px;font-size:13px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#111;margin-bottom:8px;font-family:inherit;}
+.srch:focus{outline:none;border-color:#888;}
+.alabel{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;font-weight:600;margin:0 0 7px;}
+.chip-grid{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{font-size:12px;padding:3px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;background:#fff;color:#888;font-family:inherit;transition:all .12s;}
+.chip:hover{background:#f0ede6;}
+.chip.sel{background:#111;color:#fff;border-color:#111;}
+.chip.has{border-color:#2563eb;color:#2563eb;}
+.chip.has.sel{background:#111;color:#fff;border-color:#111;}
+.res-list{margin-top:4px;}
+.res-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:13px;}
+.res-item:hover,.res-item.sel{background:#f0ede6;}
+.res-item.sel{font-weight:500;}
+.ri-art{font-size:11px;color:#aaa;}
+.ri-badge{font-size:10px;padding:1px 6px;background:#dbeafe;color:#1d4ed8;border-radius:8px;flex-shrink:0;}
+.no-res{font-size:13px;color:#aaa;padding:6px 0;font-style:italic;}
+.world-hdr{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#888;padding:6px 0 3px;border-top:1px solid #e0ddd5;margin-top:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+.world-hdr:first-of-type{border-top:none;margin-top:0;}
+.route-path{font-size:11px;color:#bbb;padding:2px 0;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
+.wrow{display:flex;gap:4px;flex-wrap:wrap;padding-bottom:4px;}
+.card{background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem;}
+.sec{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;font-weight:600;margin:0 0 8px;}
+.synset{font-family:monospace;font-size:11px;background:#f0ede6;color:#888;padding:2px 7px;border-radius:4px;}
+.pos-b{font-size:11px;background:#f0ede6;color:#888;padding:2px 8px;border-radius:10px;}
+.word-hero{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.art{font-size:15px;color:#888;}
+.wbig{font-family:Georgia,serif;font-size:26px;font-weight:400;color:#111;}
+.plural-info{font-size:12px;color:#bbb;}
+.def-en{font-size:14px;color:#666;font-style:italic;line-height:1.6;margin:6px 0 4px;}
+.def-de{font-size:13px;color:#666;line-height:1.6;margin:0 0 10px;}
+.lang-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0ede6;}
+.lang-row:last-child{border-bottom:none;}
+.lang-row.inactive{opacity:.35;}
+.rtl-text{direction:rtl;text-align:right;font-family:'Noto Sans Arabic','Arial Unicode MS',sans-serif;}
+.info-panel{background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:1.25rem;}
+.miss-eval{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.meb{font-size:12px;padding:3px 11px;border:1px solid #ddd;border-radius:14px;background:#fff;color:#888;cursor:pointer;font-family:inherit;transition:all .12s;}
+.meb.yes{background:#f0fdf4;color:#16a34a;border-color:#86efac;}
+.meb.no{background:#fef2f2;color:#dc2626;border-color:#fca5a5;}
+.meb.part{background:#fffbeb;color:#d97706;border-color:#fcd34d;}
+.miss-note{font-size:12px;color:#888;font-style:italic;margin-top:4px;}
+.lcode{width:32px;height:32px;border-radius:50%;background:#f0ede6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#888;flex-shrink:0;}
+.lname{font-size:11px;color:#bbb;margin-bottom:3px;}
+.lemma{font-size:13px;font-weight:500;}
+.lsep{color:#ccc;margin:0 3px;font-size:12px;}
+.gap-m{font-size:13px;color:#bbb;font-style:italic;}
+.rbrow{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+.rb{font-size:12px;padding:3px 10px;border:1px solid #ddd;border-radius:14px;background:#fff;color:#888;cursor:pointer;font-family:inherit;}
+.rb.ok{background:#f0fdf4;color:#16a34a;border-color:#86efac;}
+.rb.dud{background:#fffbeb;color:#d97706;border-color:#fcd34d;}
+.rb.mal{background:#fef2f2;color:#dc2626;border-color:#fca5a5;}
+.rb.gap{background:#fffbeb;color:#d97706;border-color:#fcd34d;}
+.cmt{width:100%;margin-top:6px;padding:5px 9px;font-size:12px;border:1px solid #e8e5de;border-radius:8px;background:#fff;color:#111;font-family:inherit;resize:none;}
+.ibu{font-size:12px;padding:4px 11px;border:1px solid #ddd;border-radius:14px;background:#fff;color:#888;cursor:pointer;font-family:inherit;}
+.ibu.sel{background:#fffbeb;color:#d97706;border-color:#fcd34d;}
+.bp{padding:9px 22px;background:#111;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;}
+.bp:disabled{opacity:.4;cursor:not-allowed;}
+.bs{padding:8px 16px;background:transparent;color:#111;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;}
+.bx{padding:7px 14px;background:transparent;color:#2563eb;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;}
+.score-row{display:flex;gap:18px;align-items:flex-start;}
+.sn{font-size:42px;font-weight:600;line-height:1;}
+.fb-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f0ede6;font-size:13px;line-height:1.6;}
+.fb-row:last-child{border-bottom:none;}
+.dot{width:7px;height:7px;border-radius:50%;border:2px solid;flex-shrink:0;margin-top:5px;}
+.prc{border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:7px;background:#fffbeb;}
+.prt{font-size:10px;font-weight:600;color:#d97706;text-transform:uppercase;letter-spacing:.07em;margin:0 0 4px;}
+.prd{font-size:13px;margin:0 0 5px;color:#111;}
+.prl{font-size:12px;color:#888;font-style:italic;margin:0;}
+.hpill{font-size:12px;padding:2px 9px;background:#f0ede6;border-radius:12px;color:#888;}
+.emp{text-align:center;padding:3rem 1rem;color:#bbb;}
+.emp .big{font-size:36px;margin-bottom:.75rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.lang-toggle-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ltog{font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:14px;cursor:pointer;background:#fff;color:#888;font-family:inherit;transition:all .12s;}
+.ltog.on{background:#111;color:#fff;border-color:#111;}
+.ltog:disabled{opacity:.4;cursor:not-allowed;}
+.lang-sel-box{background:#f9f8f5;border:1px solid #e8e5de;border-radius:10px;padding:12px 14px;margin-bottom:.75rem;}
+/* Verlauf */
+.vcard{border:1px solid #e8e5de;border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;background:#fff;}
+.vcard:hover{background:#f9f8f5;}
+.vcard.sel-v{border-color:#111;border-width:2px;}
+.vtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.vword{font-weight:600;font-size:14px;}
+.vscore{font-size:22px;font-weight:600;}
+.vmeta{font-size:11px;color:#aaa;line-height:1.6;}
+.vbadge{font-size:10px;padding:2px 8px;border-radius:12px;display:inline-block;margin-right:4px;}
+.vb-ok{background:#f0fdf4;color:#16a34a;}
+.vb-warn{background:#fffbeb;color:#d97706;}
+.vb-bad{background:#fef2f2;color:#dc2626;}
+.export-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.vstudent{font-size:12px;color:#2563eb;font-weight:500;}
+.detail-panel{background:#fff;border:1px solid #e8e5de;border-radius:12px;padding:1rem 1.25rem;margin-top:0;}
+.name-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.name-input{flex:1;padding:7px 10px;font-size:13px;border:1px solid #ddd;border-radius:8px;font-family:inherit;background:#fff;color:#111;}
+.save-notice{font-size:12px;color:#16a34a;font-weight:500;}
+@media(max-width:720px){#wrap{grid-template-columns:1fr;}#lp{max-height:40vh;border-right:none;border-bottom:1px solid #e0ddd5;}.two-col{grid-template-columns:1fr;}}
+</style>
+<div id="app"></div>
+<script>
+const ESMAS_DE=[
+  {w:"Belebt",p:["Mensch","Zustand","Familie"],wd:["Mutter","Vater","Großmutter","Sohn","Schwester","Cousin","Onkel","Neffe","Geschwister"]},
+  {w:"Belebt",p:["Mensch","Zustand","Bewegung"],wd:["Auswanderer","Nomade","Flüchtling","Reisender","Tourist","Pilger","Einwanderer"]},
+  {w:"Belebt",p:["Mensch","Zustand","Medizin"],wd:["Patient","Rekonvaleszent","Kranker","Verletzter","Arzt"]},
+  {w:"Belebt",p:["Mensch","Zustand","Bildung"],wd:["Student","Schüler","Lehrling","Stipendiat","Auszubildender","Azubi"]},
+  {w:"Belebt",p:["Mensch","Zustand","Bewohner"],wd:["Mieterin","Nachbar","Bewohner","Siedler","Bürger","Staatsbürger"]},
+  {w:"Belebt",p:["Mensch","Tätigkeit","Beruf"],wd:["Klempner","Elektriker","Tischler","Mechaniker","Gärtner","Arzt","Schlosser"]},
+  {w:"Belebt",p:["Mensch","Tätigkeit","Bildungsberuf"],wd:["Lehrerin","Dozent","Professor","Ausbilder","Dozentin"]},
+  {w:"Belebt",p:["Mensch","Tätigkeit","Amt"],wd:["Bürgermeister","Präsident","Direktor","Minister","Botschafter","Dekanin","Botschafterin"]},
+  {w:"Belebt",p:["Mensch","Denken","Politische Ideologie"],wd:["Sozialist","Liberal","Konservative","Zentrist","Progressist","Sozialdemokrat"]},
+  {w:"Belebt",p:["Mensch","Gruppe","Versammlung"],wd:["Kolloquium","Forum","Kongress","Seminar","Symposium","Tagung"]},
+  {w:"Belebt",p:["Tier","Säugetier"],wd:["Löwin","Tiger","Elefant","Giraffe","Pferd","Kuh","Schwein"]},
+  {w:"Belebt",p:["Tier","Insekt"],wd:["Biene","Schmetterling","Fliege","Libelle","Ameise","Käfer"]},
+  {w:"Belebt",p:["Pflanze","Obst"],wd:["Orange","Banane","Apfel","Birne","Traube","Pfirsich","Erdbeere"]},
+  {w:"Belebt",p:["Körperteil","Organ"],wd:["Herz","Leber","Lunge","Niere","Gehirn","Magen"]},
+  {w:"Belebt",p:["Körperteil","Äußerlich"],wd:["Kopf","Rücken","Gesicht","Auge","Nase","Mund","Ohr"]},
+  {w:"Material",p:["Objekt","Gastronomie","Meeresfrüchte"],wd:["Hummer","Garnelen","Miesmuscheln","Venusmuscheln","Meeresfrüchte","Languste"]},
+  {w:"Material",p:["Objekt","Gastronomie","Gewürz"],wd:["Basilikum","Pfeffer","Rosmarin","Knoblauch","Zwiebel","Zimt"]},
+  {w:"Material",p:["Objekt","Gastronomie","Allgemein"],wd:["Nachtisch","Vorspeise","Gericht","Menü","Mahlzeit","Rezept","Brunch"]},
+  {w:"Material",p:["Objekt","Kleidung"],wd:["Rock","Hemd","Hose","Kleid","Jacke","Kimono","Pullover"]},
+  {w:"Material",p:["Objekt","Bauwesen","Bildung"],wd:["Gymnasium","Schule","Universität","Institut","Akademie","Berufsschule"]},
+  {w:"Material",p:["Objekt","Bauwesen","Medizin"],wd:["Krankenhaus","Klinik","Arztpraxis","Ambulatorium","Sanatorium"]},
+  {w:"Material",p:["Objekt","Bauwesen","Wohnen"],wd:["Haus","Wohnung","Zuhause","Heim","Wohnheim","Domizil","Apartment"]},
+  {w:"Material",p:["Objekt","Bauwesen","Räume"],wd:["Küche","Schlafzimmer","Wohnzimmer","Dachboden","Keller","Balkon"]},
+  {w:"Material",p:["Objekt","Fortbewegung","Land"],wd:["Motorrad","LKW","Auto","Bus","Zug","Fahrrad","S-Bahn","Straßenbahn"]},
+  {w:"Material",p:["Objekt","Bauwesen","Räume"],wd:["Küche","Schlafzimmer","Wohnzimmer","Dachboden","Keller","Balkon","Flur"]},
+  {w:"Intellektuell",p:["Gefühle","Negativ"],wd:["Heimweh","Weltschmerz","Traurigkeit","Angst","Wut","Kummerspeck"]},
+  {w:"Intellektuell",p:["Gefühle","Komplex"],wd:["Schadenfreude","Wanderlust","Gemütlichkeit","Feierabend"]},
+  {w:"Intellektuell",p:["Eigenschaft","Charakter"],wd:["sympathisch","freundlich","aktuell","zuverlässig"]},
+  {w:"Intellektuell",p:["Sprache","Allgemein"],wd:["Dialekt","Muttersprache","Akzent","Jargon","Lehnwort","Mundart","Soziolekt"]},
+  {w:"Situationen Statisch",p:["Zustand","Existenz"],wd:["Stille","Ruhe","Frieden","Stabilität","Gleichgewicht","Stagnation"]},
+  {w:"Situationen Statisch",p:["Zustand","Besitz und Eigentum"],wd:["Eigentum","Besitz","Erbe","Schulden","Reichtum","Armut"]},
+  {w:"Situationen Statisch",p:["Zustand","Gesundheit und Krankheit"],wd:["Gesundheit","Krankheit","Behinderung","Allergie","Immunität","Schmerz"]},
+  {w:"Situationen Statisch",p:["Zustand","Bildung und Wissen"],wd:["Wissen","Unwissenheit","Bildung","Kompetenz","Erfahrung","Talent"]},
+  {w:"Situationen Statisch",p:["Zustand","Soziale Lage"],wd:["Obdachlosigkeit","Armut","Wohlstand","Privilegierung","Diskriminierung","Einsamkeit"]},
+  {w:"Situationen Dynamisch",p:["Handlung","Bewegung"],wd:["Reise","Flucht","Migration","Wanderung","Auswanderung","Rückkehr"]},
+  {w:"Situationen Dynamisch",p:["Handlung","Kommunikation"],wd:["Gespräch","Diskussion","Streit","Verhandlung","Schweigen","Gerücht"]},
+  {w:"Situationen Dynamisch",p:["Handlung","Arbeit und Produktion"],wd:["Arbeit","Herstellung","Reparatur","Zerstörung","Aufbau","Ernte"]},
+  {w:"Situationen Dynamisch",p:["Handlung","Bildung und Lernen"],wd:["Lernen","Lehren","Prüfung","Forschung","Entdeckung","Erfindung"]},
+  {w:"Situationen Dynamisch",p:["Ereignis","Natur"],wd:["Sturm","Erdbeben","Überschwemmung","Dürre","Eruption","Lawine"]},
+  {w:"Situationen Dynamisch",p:["Ereignis","Gesellschaft"],wd:["Wahl","Revolution","Krieg","Frieden","Streik","Demonstration"]},
+  {w:"Einheit",p:["Maß","Zeit"],wd:["Sekunde","Minute","Stunde","Tag","Woche","Monat","Jahrhundert"]},
+  {w:"Einheit",p:["Maß","Länge und Fläche"],wd:["Millimeter","Zentimeter","Meter","Kilometer","Hektar","Quadratmeter"]},
+  {w:"Einheit",p:["Maß","Gewicht und Volumen"],wd:["Gramm","Kilogramm","Tonne","Liter","Milliliter","Kubikzentimeter"]},
+  {w:"Einheit",p:["Maß","Temperatur und Energie"],wd:["Grad","Celsius","Fahrenheit","Kelvin","Joule","Watt","Kilowattstunde"]},
+  {w:"Einheit",p:["Maß","Informationstechnologie"],wd:["Byte","Kilobyte","Megabyte","Gigabyte","Terabyte","Pixel","Hertz"]},
+  {w:"Einheit",p:["Währung"],wd:["Euro","Dollar","Pfund","Yen","Rubel","Peso","Dinar"]},
+  {w:"Ort",p:["Geografisch","Kontinent und Region"],wd:["Europa","Asien","Afrika","Amerika","Naher Osten","Mittelmeer","Arktis"]},
+  {w:"Ort",p:["Geografisch","Land und Staat"],wd:["Deutschland","Österreich","Schweiz","Spanien","Frankreich","Marokko","China"]},
+  {w:"Ort",p:["Geografisch","Naturraum"],wd:["Gebirge","Wüste","Dschungel","Steppe","Tundra","Meer","Fluss"]},
+  {w:"Ort",p:["Siedlung","Typ"],wd:["Metropole","Stadt","Dorf","Weiler","Vorstadt","Ghetto","Industriegebiet"]},
+  {w:"Ort",p:["Siedlung","Infrastruktur"],wd:["Bahnhof","Flughafen","Hafen","Autobahn","Brücke","Tunnel","Stausee"]},
+  {w:"Ort",p:["Institutionell","Bildung und Forschung"],wd:["Universität","Bibliothek","Labor","Archiv","Museum","Observatorium"]},
+  {w:"Ort",p:["Institutionell","Politik und Recht"],wd:["Parlament","Botschaft","Gericht","Gefängnis","Rathaus","Grenze","Kaserne"]},
+];
+
+const WD={
+  "Flüchtling":{art:"der",pl:"Flüchtlinge",s:"refugee.n.01",pos:"Substantiv",
+    def_en:"a person who has been forced to leave their country due to war, persecution, or disaster",
+    def_de:"Person, die aus politischen, religiösen oder humanitären Gründen ihr Heimatland verlassen musste",
+    eq:{es:["refugiado/a"],en:["refugee"],fr:["réfugié(e)"],pt:["refugiado/a"],it:["rifugiato/a"],"ar":["لاجئ (lāji') — الجمع: لاجئون — ملاحظة: 'geflüchtet' أكثر حياداً سياسياً"],"ru":["беженец (béženets) — ж. беженка — мн. беженцы"]},
+    ej:["Tausende Flüchtlinge warten an der Grenze.","Der Flüchtlingsstrom nach Europa hat zugenommen."],
+    hi:["Migrant","vertriebene Person"],ho:["Kriegsflüchtling","Klimaflüchtling","Asylbewerber/in"],
+    probs:[
+      {t:"registro",l:["de"],d:"Das Suffix '-ling' kann im Deutschen diminutiv oder abwertend wirken (vgl. Schwächling, Feigling). 'Geflüchtete(r)' gilt als neutraler und wird im öffentlichen Diskurs bevorzugt.",g:"alta"},
+      {t:"generisches_maskulinum",l:["de"],d:"'Flüchtling' ist grammatikalisch Maskulinum, bezeichnet aber alle Geschlechter. Im Spanischen unterscheidet man 'refugiado'/'refugiada'. Die Gendermarkierung funktioniert in jeder Zielsprache anders.",g:"media"}
+    ],
+    n:"'Flüchtling' ist ein Paradebeispiel für politisch aufgeladenes Vokabular. Der Lexikograf muss neben dem Äquivalent auch Registerwert und die laufende Debatte über 'Geflüchtete' dokumentieren."
+  },
+  "Heimweh":{art:"das",pl:"— (kein Plural)",s:"homesickness.n.01",pos:"Substantiv",
+    def_en:"a longing for one's home or homeland during an absence from it",
+    def_de:"Sehnsucht nach der Heimat oder dem vertrauten Zuhause bei längerer Abwesenheit",
+    eq:{es:["morriña (Galicien/Asturien)","añoranza (allgemein)"],en:["homesickness (Kompositum)"],fr:["mal du pays (Umschreibung)"],pt:["saudade (semantisch breiter)"],it:["nostalgia di casa (Umschreibung)"],"ar":["الحنين إلى الوطن (al-ḥanīn ilā l-waṭan) — لا يوجد مفرد من كلمة واحدة"],"ru":["тоска по родине (toskȧ po ródine) — ностальгия (nostalgiya)"]},
+    ej:["Nach drei Monaten im Ausland bekam sie schlimmes Heimweh.","Heimweh ist der stille Preis des Reisens."],
+    hi:["Emotion","Sehnsucht"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["en","fr","it"],d:"Für 'Heimweh' gibt es in EN, FR und IT kein einlexikalisches Äquivalent. Die Äquivalente sind Komposita oder Umschreibungen.",g:"alta"},
+      {t:"equivalente_parcial",l:["pt"],d:"'Saudade' ist semantisch breiter: umfasst auch Sehnsucht nach Personen oder vergangenen Zeiten. 'Saudade de casa' wäre eine Umschreibung.",g:"media"},
+      {t:"equivalente_parcial",l:["es"],d:"'Morriña' ist dialektal (galicisch-spanisch) und kulturspezifisch. 'Añoranza' ist neutraler, aber weniger emotional markiert.",g:"baja"}
+    ],
+    n:"'Heimweh' zeigt das Muster kompositumsreicher Sprachen: Deutsch kodiert emotionale Nuancen einlexikalisch, während andere Sprachen Umschreibungen benötigen."
+  },
+  "Gymnasium":{art:"das",pl:"Gymnasien",s:"grammar_school.n.01",pos:"Substantiv",
+    def_en:"a secondary school preparing students for university, with emphasis on academic subjects",
+    def_de:"Weiterführende Schule, die zum Abitur führt; 8–9 Jahre Schulzeit nach der Grundschule",
+    eq:{es:["instituto de bachillerato"],en:["grammar school (BrE) / college-prep high school (AmE) — NICHT 'gymnasium'!"],fr:["lycée"],pt:["liceu"],it:["liceo"],"ar":["مدرسة ثانوية أكاديمية — تحذير: gymnasium (EN) = صالة رياضة"],"ru":["гимназия (gimnázija) — аналог DE-Gymnasium в рус. системе; гимнастический зал = физкультурный зал"]},
+    ej:["Sie geht aufs Gymnasium und macht nächstes Jahr Abitur.","Das Gymnasium hat einen ausgezeichneten Ruf."],
+    hi:["weiterführende Schule"],ho:["humanistisches Gymnasium","Sprachgymnasium"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"FALSCHER FREUND: 'gymnasium' (EN) = Sporthalle / Fitnessstudio. Das deutsche 'Gymnasium' heißt auf Englisch 'grammar school' (BrE) oder 'college-prep high school' (AmE).",g:"alta"},
+      {t:"equivalente_parcial",l:["es","fr","it"],d:"'Instituto', 'lycée' und 'liceo' sind funktionale, keine strukturellen Äquivalente: unterschiedliche Schulstruktur, Abschlussprüfungen und gesellschaftlicher Status.",g:"media"}
+    ],
+    n:"'Gymnasium' ist einer der bekanntesten deutschen falschen Freunde im Englischen. Das Wörterbuch muss die Warnung explizit setzen: EN 'gymnasium' ≠ DE 'Gymnasium'."
+  },
+  "sympathisch":{art:"—",pl:"—",s:"likable.s.01",pos:"Adjektiv",
+    def_en:"pleasant, friendly, and easy to like; appealing in personality",
+    def_de:"angenehm im Umgang; macht einen guten, positiven Eindruck auf Anhieb",
+    eq:{es:["simpático/a"],en:["likable / nice — NICHT: sympathetic!"],fr:["sympathique"],pt:["simpático/a"],it:["simpatico/a"],"ar":["لطيف/محبوب (laṭīf / maḥbūb) — تحذير: 'sympathetic' (EN) ≠ تعاطفي"],"ru":["симпатичный (simpatíčnyj) — близко к DE; 'симпатичный' = привлекательный/приятный"]},
+    ej:["Der neue Kollege ist sehr sympathisch.","Sie wirkt auf Anhieb sympathisch und offen."],
+    hi:["angenehm","freundlich"],ho:[],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"FALSCHER FREUND: 'sympathetic' (EN) = einfühlsam, mitfühlend. DE 'sympathisch' = likeable (EN). Der korrekte EN-Ausdruck ist 'likeable' oder umgangssprachlich 'nice'.",g:"alta"},
+      {t:"registro",l:["en"],d:"'Likeable' ist korrekt, aber formell. Im natürlichen Englisch sagt man häufiger 'nice' oder 'friendly'. Die romanischen Entsprechungen sind semantisch kongruenter.",g:"baja"}
+    ],
+    n:"'Sympathisch/sympathetic' ist ein klassisches Interferenzproblem. Im Gegensatz zu den romanischen Sprachen weicht das Englische ab: 'sympathetic' kodiert Empathie, nicht das Gefallen an einer Person."
+  },
+  "Klempner":{art:"der",pl:"Klempner",s:"plumber.n.01",pos:"Substantiv",
+    def_en:"craftsman for pipe installation (sense 1) or sheet metal work/tinsmith (sense 2) — German covers both",
+    def_de:"(1) Handwerker für Rohrleitungen und Wasserinstallationen; (2) Handwerker für Blechwaren und Dachabdichtung (regional: Flaschner, Spengler)",
+    eq:{es:["fontanero/a (Bed. 1) / hojalatero/a (Bed. 2)"],en:["plumber (Bed. 1) / tinsmith (Bed. 2)"],fr:["plombier (Bed. 1) / ferblantier (Bed. 2)"],pt:["encanador (Bed. 1) / latoeiro (Bed. 2)"],it:["idraulico (Bed. 1) / lattoniere (Bed. 2)"],"ar":["سباك (sabbāk) — بمعنى 1 (أنابيب) / حداد صفائح (معنى 2)"],"ru":["сантехник (santéxnik) — смысл 1 / жестянщик (žestjánščik) — смысл 2"]},
+    ej:["Der Klempner hat die Wasserleitung repariert.","Ein Klempner hat das Metalldach abgedichtet."],
+    hi:["Handwerker"],ho:["Sanitärinstallateur","Spengler","Flaschner"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"Im Deutschen deckt 'Klempner' zwei verschiedene Handwerksberufe ab, die in allen anderen Sprachen durch unterschiedliche Wörter ausgedrückt werden.",g:"alta"},
+      {t:"variacion_dialectal",l:["de"],d:"In Süddeutschland/Österreich: 'Spengler' oder 'Flaschner'. 'Klempner' dominiert in Norddeutschland.",g:"media"}
+    ],
+    n:"'Klempner' zeigt, wie eine Sprache zwei konzeptuell verschiedene Berufe bündelt, die andere Sprachen lexikalisch trennen."
+  },
+  "Meeresfrüchte":{art:"die",pl:"Meeresfrüchte (Pluralwort)",s:"seafood.n.01",pos:"Substantiv",
+    def_en:"edible aquatic animals; in German, broadly: crustaceans, molluscs, and often fish",
+    def_de:"Sammelbegriff für essbare Meerestiere: Krebstiere, Weichtiere — oft auch Fisch einschließend",
+    eq:{es:["marisco/s (NUR Schalen-/Krustentiere, KEIN Fisch)"],en:["shellfish (enger) / seafood (breiter, inkl. Fisch)"],fr:["fruits de mer (kann Fisch einschließen)"],pt:["marisco (ähnlich ES, enger)"],it:["frutti di mare (ähnlich DE/FR)"],"ar":["المأكولات البحرية (al-ma'kūlāt al-baḥriyya) — أوسع من 'marisco'"],"ru":["морепродукты (moreprodúkty) — широкое понятие, как DE"]},
+    ej:["Das Restaurant ist bekannt für seine frischen Meeresfrüchte.","Ein Salat mit Garnelen und Tintenfisch."],
+    hi:["Lebensmittel","Meerestier"],ho:["Garnelen","Hummer","Miesmuscheln"],
+    probs:[
+      {t:"equivalente_parcial",l:["es","pt"],d:"'Marisco' bezieht sich NUR auf Schalentiere, schließt Fisch aus. DE 'Meeresfrüchte' kann auch Fisch umfassen.",g:"alta"},
+      {t:"laguna_lexica",l:["en"],d:"'Shellfish' (EN) ist enger (nur Tiere mit Schale). 'Seafood' schließt Fisch ein. Kein EN-Wort trifft die deutsche Kategorie genau.",g:"media"}
+    ],
+    n:"'Meeresfrüchte' illustriert kulturell bedingte Kategorisierungen — relevant für Speisekarten, Allergenkennzeichnung und Handelsrecht."
+  },
+  "Schadenfreude":{art:"die",pl:"— (kein Plural)",s:"gloating.n.01",pos:"Substantiv",
+    def_en:"pleasure experienced at the misfortune or failure of another person",
+    def_de:"Freude oder Befriedigung beim Unglück oder Scheitern einer anderen Person",
+    eq:{es:["alegría por el mal ajeno (Umschreibung)","— kein Einwortäquivalent"],en:["Schadenfreude (dt. Lehnwort)","gloating (nicht exakt)"],fr:["joie maligne (literarisch)","— kein allgemeines Äquivalent"],pt:["alegria com o azar alheio (Umschreibung)"],it:["godimento (ungefähr)","— kein Einwortäquivalent"],"ar":["شماتة (šamāta) ★ — كلمة وحيدة تعبر عن نفس المفهوم"],"ru":["злорадство (zlorádstvo) ★ — существует как единое слово"]},
+    ej:["Es wäre Schadenfreude, sich über das Scheitern des Konkurrenten zu freuen."],
+    hi:["Emotion","komplexes Gefühl"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["es","fr","pt","it"],d:"'Schadenfreude' hat in den romanischen Sprachen kein einlexikalisches Äquivalent. Alle Äquivalente sind Umschreibungen.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"'Gloating' betont das ostentative Zeigen des Erfolgs, nicht das bloße innere Empfinden. Das Lehnwort 'Schadenfreude' füllt die Lücke.",g:"media"}
+    ],
+    n:"'Schadenfreude' ist eines der bekanntesten deutschen Lehnwörter — ein Musterbeispiel dafür, wie lexikalische Lücken durch Entlehnung geschlossen werden."
+  },
+  "Weltschmerz":{art:"der",pl:"— (kein Plural)",s:"world_weariness.n.01",pos:"Substantiv",
+    def_en:"deep sadness about the state of the world; existential suffering at societal imperfection (Romantic-era concept, Jean Paul 1827)",
+    def_de:"Tiefer Schmerz über die Unvollkommenheit der Welt; Begriff der deutschen Romantik",
+    eq:{es:["mal del mundo (Umschreibung)"],en:["Weltschmerz (dt. Lehnwort)","world-weariness (semantisch flacher)"],fr:["spleen (ähnlich, aber FR-kulturspezifisch)","mal du siècle"],pt:["angústia existencial (ungefähr)"],it:["nausea esistenziale (sartreanisch)"],"ar":["ألم العالم / الحزن الوجودي — لا يوجد مفرد واحد"],"ru":["мировая скорбь (mirovája skórb') — калька с нем.; также: Weltschmerz (заимствование)"]},
+    ej:["Goethe beschrieb in 'Werther' einen jungen Mann, der am Weltschmerz litt."],
+    hi:["Emotion","Existenzgefühl"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["es","pt","it"],d:"Kein einlexikalisches Äquivalent. Umschreibungen erfassen weder die romantische Dimension noch den kulturhistorischen Ursprung.",g:"alta"},
+      {t:"equivalente_parcial",l:["fr"],d:"'Spleen' und 'mal du siècle' sind inhaltlich verwandt, aber kulturspezifisch für die französische Literatur.",g:"media"},
+      {t:"equivalente_parcial",l:["en"],d:"'World-weariness' ist semantisch flacher (nur 'Müdigkeit', kein Schmerz). Das Lehnwort 'Weltschmerz' füllt die Lücke.",g:"media"}
+    ],
+    n:"'Weltschmerz' zeigt, wie kulturhistorisch gebundene Konzepte nicht übersetzt, sondern entlehnt werden."
+  },
+  "Feierabend":{art:"der",pl:"Feierabende",s:"end_of_work_day.n.01",pos:"Substantiv",
+    def_en:"the end of the working day, with strong connotations of earned rest and relief; literally: 'celebration evening'",
+    def_de:"Ende der Arbeitszeit; der Übergang vom Berufsleben in die Freizeit, emotional positiv konnotiert als verdiente Erholung",
+    eq:{es:["fin de la jornada (neutral, ohne Konnotation)","hora de salida (nur der Moment)"],en:["end of work / clocking off — nur das Faktum, ohne die Emotion"],fr:["fin de journée / fin du travail — neutre"],pt:["fim do expediente — neutro"],it:["fine del lavoro / stacco (colloquiale)"],"ar":["نهاية يوم العمل — لا مفرد واحد يحمل نفس الدلالة الإيجابية"],"ru":["конец рабочего дня — нет точного эквивалента с позитивной коннотацией"]},
+    ej:["Endlich Feierabend! Ich brauche jetzt ein Bier.","Nach einem langen Feierabend sitze ich gerne auf dem Balkon."],
+    hi:["Tageszeit","Arbeitsende"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["en","fr","pt","it"],d:"'Feierabend' ist nicht nur 'end of work': Es enthält die emotionale Dimension der verdienten Erholung. Diese Konnotation fehlt in allen Äquivalenten — sie sind rein denotativ.",g:"alta"},
+      {t:"equivalente_parcial",l:["es"],d:"'Fin de la jornada' deckt den zeitlichen Aspekt ab, aber nicht die kulturelle Bedeutung des positiven Übergangs.",g:"media"}
+    ],
+    n:"'Feierabend' repräsentiert ein kulturelles Konzept der deutschen Arbeitswelt: die klare Trennung zwischen Arbeit und Freizeit mit positiver emotionaler Markierung."
+  },
+  "Gemütlichkeit":{art:"die",pl:"— (kein Plural)",s:"coziness.n.01",pos:"Substantiv",
+    def_en:"a quality of warmth, coziness, and convivial well-being in a social setting; relaxed pleasant atmosphere with food, warmth and good company",
+    def_de:"Angenehme, wohlige Atmosphäre; Gefühl von Behaglichkeit, Entspannung und geselliger Wärme",
+    eq:{es:["ambiente acogedor (Ort, Adj.) — kein Substantiv für den Zustand"],en:["Gemütlichkeit (dt. Lehnwort) / coziness / conviviality — alle partiell"],fr:["convivialité (soziale Dim.) / ambiance chaleureuse"],pt:["aconchego (Wärme) / convivialidade (sozial)"],it:["accoglienza (Gastfreundschaft) / atmosfera raccolta (Umschreibung)"],"ar":["الدفء والمودة الاجتماعية — لا مفرد واحد مناسب"],"ru":["уют (ujút) — физ. уютность / уютная атмосфера; 'душевность' (dúševnost') — близко"]},
+    ej:["Das Restaurant hat eine echte Gemütlichkeit.","Beim Weihnachtsmarkt herrscht immer viel Gemütlichkeit."],
+    hi:["Atmosphäre","Wohlbefinden"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["es","pt"],d:"Im Spanischen und Portugiesischen gibt es kein Substantiv, das den Zustand 'Gemütlichkeit' direkt ausdrückt. 'Acogedor' ist ein Adjektiv für den Ort, nicht für das Erleben.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"'Coziness' betont die physische Wärme; 'conviviality' betont das Soziale. 'Gemütlichkeit' verbindet beides unlöslich. Das Lehnwort zeigt, dass EN die Lücke nicht anders schließen konnte.",g:"alta"},
+      {t:"connotacion",l:["fr"],d:"'Convivialité' hat im Französischen einen sozialpolitischen Klang (Illich). Die atmosphärische Dimension ist im FR-Äquivalent schwächer.",g:"baja"}
+    ],
+    n:"'Gemütlichkeit' ist ein Kulturexportartikel: Das Lehnwort im Englischen zeigt, dass keine Zielsprache das Konzept vollständig lexikalisiert hat."
+  },
+  "aktuell":{art:"—",pl:"—",s:"current.s.01",pos:"Adjektiv",
+    def_en:"current, up-to-date, of the present moment",
+    def_de:"gegenwärtig, zeitgemäß, auf dem neuesten Stand; was gerade jetzt gilt oder stattfindet",
+    eq:{es:["actual / de actualidad / vigente"],en:["current / up-to-date / topical — NICHT: actual!"],fr:["actuel (semantisch kongruent mit DE)"],pt:["atual / de atualidade"],it:["attuale / aggiornato"]},
+    ej:["Was ist die aktuelle Situation?","Der aktuelle Bericht wurde gestern veröffentlicht."],
+    hi:["zeitlich","gegenwärtig"],ho:[],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"FALSCHER FREUND: 'actual' (EN) = wirklich, tatsächlich, eigentlich (≈ DE 'tatsächlich'). DE 'aktuell' = current (EN). Sehr häufiger Interferenzfehler in wissenschaftlichen Texten.",g:"alta"},
+      {t:"connotacion",l:["fr"],d:"FR 'actuel' ist semantisch kongruent mit DE 'aktuell' (beide = gegenwärtig). Eine seltene Konvergenz DE/FR gegen EN.",g:"baja"}
+    ],
+    n:"'aktuell/actual' ist neben 'sympathisch/sympathetic' und 'Gymnasium/gymnasium' der dritte klassische deutsch-englische Falscher Freund im akademischen Bereich."
+  },
+  "Wanderlust":{art:"die",pl:"— (kein Plural)",s:"wanderlust.n.01",pos:"Substantiv",
+    def_en:"a strong desire or impulse to travel and explore the world; lit. 'wandering-desire'",
+    def_de:"Starker Drang zu reisen und die Welt zu erkunden; kulturhistorisch verbunden mit der Wandervogel-Bewegung",
+    eq:{es:["ganas de viajar / amor por los viajes — Umschreibungen"],en:["Wanderlust (dt. Lehnwort, sehr verbreitet)"],fr:["soif de voyages / esprit voyageur — Umschreibungen"],pt:["vontade de viajar — Umschreibung"],it:["voglia di viaggiare — Umschreibung"],"ar":["شوق إلى السفر — لا مفرد واحد"],"ru":["страсть к путешествиям — нет единого слова; 'Wanderlust' как заимствование"]},
+    ej:["Ihre Wanderlust trieb sie nach Asien.","Social Media hat die kollektive Wanderlust befeuert."],
+    hi:["Wunsch","Gefühl","Reisedrang"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["es","fr","pt","it"],d:"Keine Zielsprache hat ein einlexikalisches Äquivalent für den starken inneren Drang zu reisen als dauerhaftes Persönlichkeitsmerkmal.",g:"alta"},
+      {t:"connotacion",l:["en"],d:"Das EN-Lehnwort 'Wanderlust' hat eine romantisierende, Instagram-geprägte Konnotation bekommen, die den kulturhistorischen Kontext (Wandervogel-Bewegung) verflacht.",g:"media"}
+    ],
+    n:"'Wanderlust' zeigt den Lebenszyklus eines Lehnworts: Entlehnung wegen lexikalischer Lücke → Bedeutungsverschiebung in der Zielsprache."
+  },
+  "Kummerspeck":{art:"der",pl:"— (kein Plural)",s:"comfort_eating_weight.n.01",pos:"Substantiv",
+    def_en:"excess weight gained from emotional overeating; literally: 'grief bacon'",
+    def_de:"Übergewicht, das durch Essen als Reaktion auf Kummer oder Stress entsteht; wörtlich: 'Speck aus Kummer'",
+    eq:{es:["kilos de la tristeza (Umschreibung)","— sin equivalente único"],en:["emotional eating weight — Umschreibung","Kummerspeck (Lehnwort im EN bekannt)"],fr:["kilos du chagrin — Umschreibung"],pt:["quilos de tristeza — Umschreibung"],it:["chili dello stress — Umschreibung"]},
+    ej:["Nach der Trennung hat sie fünf Kilo Kummerspeck zugelegt."],
+    hi:["Körpergewicht","emotionale Reaktion"],ho:[],
+    probs:[
+      {t:"laguna_lexica",l:["es","fr","pt","it"],d:"Keine Zielsprache hat ein einlexikalisches Äquivalent. Das Kompositum 'Kummer+Speck' bündelt Emotion und körperliche Folge in einem Wort.",g:"alta"},
+      {t:"registro",l:["de"],d:"'Kummerspeck' hat einen umgangssprachlich-humoristischen Ton. In medizinischen Texten würde man 'emotionales Überessen' oder 'stressinduzierte Gewichtszunahme' bevorzugen.",g:"media"}
+    ],
+    n:"'Kummerspeck' ist ein Lehrstück für die Produktivität des deutschen Kompositumssystems: zwei Konzepte, eine dichte Einheit, die sich in anderen Sprachen nicht einlexikalisiert hat."
+  },
+  "Geschwister":{art:"die",pl:"Geschwister (nur Plural)",s:"siblings.n.01",pos:"Substantiv (Pluralwort)",
+    def_en:"siblings; brothers and sisters collectively — German has no singular: *Geschwister means the group, not one sibling",
+    def_de:"Bruder und Schwester zusammen; Kollektivbegriff ohne Einzelform — das Wort existiert nur im Plural",
+    eq:{es:["hermanos (mask. Pl. deckt Geschwister ab, aber auch 'nur Brüder') / hermanos y hermanas (explizit)"],en:["siblings (eher formell/schriftsprachlich) / brothers and sisters (umgangssprachlich)"],fr:["frères et sœurs (nur Umschreibung) / fratrie (kollektiv, selten)"],pt:["irmãos (mask. Pl., wie ES)"],it:["fratelli e sorelle (Umschreibung) / fratellanza (abstrakt)"],"ar":["الإخوة والأخوات (al-iḫwa wa-l-aḫawāt) — مفرد الذكور: أخ، الإناث: أخت"],"ru":["братья и сёстры — нет единого слова для обоих полов вместе; сиблинги (фасс.)"]},
+    ej:["Hast du Geschwister? — Ja, ich habe zwei Geschwister: einen Bruder und eine Schwester.","Meine Geschwister wohnen in München.","*Mein Geschwister — grammatisch falsch!"],
+    hi:["Familienangehörige"],ho:["Bruder","Schwester","Halbgeschwister","Stiefgeschwister"],
+    probs:[
+      {t:"laguna_lexica",l:["en","fr","it"],d:"Im Englischen gibt es kein einlexikalisches, geschlechtsneutrales Alltagswort für 'Geschwister'. 'Siblings' ist formal; im Alltag sagt man 'brothers and sisters'. FR und IT kennen nur Umschreibungen.",g:"alta"},
+      {t:"equivalente_parcial",l:["es","pt"],d:"'Hermanos' deckt im Spanischen/Portugiesischen sowohl 'nur Brüder' als auch 'Geschwister' ab (generisches Maskulinum). Der Kontext muss klären, ob nur Brüder oder gemischtgeschlechtliche Geschwister gemeint sind — dasselbe Problem wie im Deutschen mit anderen Wörtern.",g:"alta"},
+      {t:"polisemia",l:["de"],d:"'Geschwister' existiert nur im Plural. Für ein einzelnes Geschwisterkind sagt man 'Geschwisterteil' (formell) oder gibt das Geschlecht an ('mein Bruder / meine Schwester'). Das Fehlen der Singularform ist für Muttersprachler anderer Sprachen ungewohnt.",g:"media"}
+    ],
+    n:"'Geschwister' ist lexikografisch faszinierend: ein Pluralwort ohne Singular, das eine konzeptuelle Kategorie (Geschwisterschaft) lexikalisiert, die in romanischen und englischen Sprachen umschrieben werden muss."
+  },
+  "Schüler":{art:"der",pl:"Schüler / Schülerinnen",s:"pupil.n.01",pos:"Substantiv",
+    def_en:"a child or young person attending school (primary to secondary); distinct from 'Student' (university level)",
+    def_de:"Person, die eine Schule besucht (Primar- bis Sekundarstufe); im Deutschen strikt von 'Student' (Hochschule) unterschieden",
+    eq:{es:["alumno/a (todos los niveles) / estudiante (todos los niveles)"],en:["pupil (BrE, 6–18 Jahre) / student (AmE, alle Niveaus — nivelliert die DE-Unterscheidung)"],fr:["élève (6–18 Jahre, entspricht genau DE Schüler) / étudiant (Hochschule)"],pt:["aluno/a (alle Niveaus) / estudante (alle Niveaus)"],it:["alunno/a (Primar) / studente (Sekund. und Hochschule)"],"ar":["تلميذ (tilmīḏ) — مدرسة أساسية وثانوية / طالب (ṭālib) — أشمل"],"ru":["ученик (učénik) — школьник; студент (studént) — университет (различие как DE)"]},
+    ej:["Die Schüler der 8. Klasse schreiben morgen eine Klassenarbeit.","Als Schüler hatte ich Deutsch als Lieblingsfach."],
+    hi:["Lernender","Auszubildender"],ho:["Grundschüler","Gymnasiast","Oberschüler"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"'Scholar' (EN) = Gelehrter, Wissenschaftler / Stipendiat — NICHT Schüler! Im Englischen (AmE) nivelliert 'student' die DE-Unterscheidung Schüler/Student. Ein 'high school student' ist ein DE-Schüler, kein DE-Student.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"BrE 'pupil' entspricht dem DE 'Schüler' gut, ist aber in AmE unüblich. Die Wahl des Äquivalents hängt von der Varietät des Englischen ab.",g:"media"},
+      {t:"equivalente_parcial",l:["es","pt"],d:"Im Spanischen und Portugiesischen decken 'alumno' und 'aluno' alle Bildungsniveaus ab, ohne die DE-Trennlinie Schüler/Student. Der Kontext muss das Niveau klären.",g:"baja"}
+    ],
+    n:"Das Begriffspaar Schüler/Student ist ein gutes Beispiel für unterschiedliche konzeptuelle Grenzen im Bildungsbereich. Die amerikanisch-englische Nivellierung über 'student' verschleiert eine im Deutschen wichtige institutionelle Unterscheidung."
+  },
+  "Lehrling":{art:"der",pl:"Lehrlinge",s:"apprentice.n.01",pos:"Substantiv",
+    def_en:"a person learning a trade or craft through practical work experience, typically under contract with an employer",
+    def_de:"Person in einer beruflichen Ausbildung (duales System); veraltendes Synonym für 'Auszubildender (Azubi)'",
+    eq:{es:["aprendiz/a"],en:["apprentice / trainee"],fr:["apprenti(e)"],pt:["aprendiz"],it:["apprendista"]},
+    ej:["Er begann als Lehrling in einer Schreinerei.","Früher hieß der Lehrling Lehrling, heute heißt er Azubi."],
+    hi:["Auszubildender","Berufseinsteiger"],ho:["Kaufmannslehrling","Handwerkslehrling"],
+    probs:[
+      {t:"registro",l:["de"],d:"'Lehrling' gilt als veraltet oder regional. Im modernen Deutschen bevorzugt man 'Auszubildende(r)' oder die Kurzform 'Azubi'. Das Äquivalent 'apprentice' im Englischen hat dieses Registerprob. nicht.",g:"alta"},
+      {t:"registro",l:["de"],d:"Das Suffix '-ling' (vgl. Flüchtling, Feigling) kann im Deutschen eine Diminutiv- oder pejorative Konnotation haben. 'Lehrling' ist davon nicht ganz frei — einer der Gründe für den Rückzug des Worts.",g:"media"},
+      {t:"equivalente_parcial",l:["en"],d:"'Trainee' ist breiter: bezeichnet auch Personen in Einarbeitungsprogrammen (Graduate Trainee) ohne handwerklichen Kontext. 'Apprentice' ist im DE-Sinne präziser, aber kulturell mit dem britischen TV-Format verbunden.",g:"baja"}
+    ],
+    n:"'Lehrling' illustriert Registerverschiebung im Deutschen: Das Wort ist nicht verschwunden, aber 'Azubi' hat es im Alltag verdrängt. Für den Lexikografen stellt sich die Frage, welche Form als Lemma und welche als Verweis gesetzt wird."
+  },
+  "Krankenhaus":{art:"das",pl:"Krankenhäuser",s:"hospital.n.01",pos:"Substantiv",
+    def_en:"a medical institution where sick or injured people are given medical treatment and nursing care",
+    def_de:"Medizinische Einrichtung mit stationärer Behandlung; Kompositum: krank (ill) + Haus (house)",
+    eq:{es:["hospital (von lat. hospes = Gastgeber, Gast)"],en:["hospital (von lat. hospitale = Gasthaus für Reisende)"],fr:["hôpital (gleiche lat. Etymologie)"],pt:["hospital (gleiche lat. Etymologie)"],it:["ospedale (von lat. hospitalis)"]},
+    ej:["Sie wurde ins Krankenhaus eingeliefert.","Das Krankenhaus hat 400 Betten.","Er liegt seit einer Woche im Krankenhaus."],
+    hi:["Gebäude","Gesundheitseinrichtung"],ho:["Universitätsklinikum","Fachkrankenhaus","Privatklinik"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"Im Deutschen unterscheidet man Krankenhaus (allgemein, stationär), Klinik (spezialisiert oder privat), Arztpraxis (ambulant) und Ambulatorium (ambulant, institutionell). In EN/ES/FR deckt 'hospital/hôpital' den Kernbereich ab, aber die feinen Unterschiede zwischen Klinik und Krankenhaus sind im DE ausgeprägter.",g:"media"},
+      {t:"connotacion",l:["de"],d:"Das Kompositum 'Krankenhaus' (Haus der Kranken) hat eine sachliche, leicht institutionelle Konnotation. 'Klinik' klingt moderner und privater. Die Äquivalente in den Zielsprachen tragen diese stilistische Differenz nicht.",g:"baja"}
+    ],
+    n:"'Krankenhaus' ist ein Lehrstück für Komposita-Motivation im Deutschen: 'Krankenhaus' (krank+Haus) beschreibt die Funktion direkt, während 'hospital' (von hospes=Gast) historisch an Gastfreundschaft anknüpft — zwei völlig verschiedene konzeptuelle Zugänge."
+  },
+  "Bürgermeister":{art:"der",pl:"Bürgermeister / Bürgermeisterinnen",s:"mayor.n.01",pos:"Substantiv",
+    def_en:"the elected head of a city or town government; the chief municipal official",
+    def_de:"Gewähltes Oberhaupt einer Gemeinde oder Stadt; Kompositum: Bürger (citizen) + Meister (master/expert)",
+    eq:{es:["alcalde/alcaldesa (vom arab. al-qāḍī = der Richter)"],en:["mayor (vom frz. maire, lat. maior = der Größere)"],fr:["maire (lat. maior = der Größere)"],pt:["prefeito/a (lat. praefectus = Vorsteher)"],it:["sindaco/sindaca (griech. syndikos = Rechtsvertreter)"]},
+    ej:["Der Bürgermeister eröffnet das Stadtfest.","Sie wurde zur ersten Bürgermeisterin der Stadt gewählt."],
+    hi:["Amtsträger","Kommunalpolitiker"],ho:["Oberbürgermeister","Erster Bürgermeister"],
+    probs:[
+      {t:"equivalente_parcial",l:["es"],d:"'Alcalde' stammt aus dem Arabischen (al-qāḍī = der Richter) und verweist auf eine völlig andere etymologische Motivation: richterliche Gewalt statt Bürgerrepräsentation.",g:"media"},
+      {t:"equivalente_parcial",l:["en","fr"],d:"'Mayor' / 'maire' stammen von lat. 'maior' (der Größere/Höhere). DE 'Bürgermeister' betont dagegen explizit die Verbindung zum Bürger (Bürger + Meister = Meister der Bürger).",g:"media"},
+      {t:"generisches_maskulinum",l:["de"],d:"'Bürgermeister' ist grammatikalisch Maskulinum; die weibliche Form ist 'Bürgermeisterin'. Im Englischen ist 'mayor' geschlechtsneutral. Die Feminisierung ist in romanischen Sprachen unterschiedlich weit fortgeschritten.",g:"baja"}
+    ],
+    n:"'Bürgermeister' ist ein perfektes Beispiel für divergente etymologische Motivationen: Deutsch betont die Bürgerschaft, Englisch/Französisch die Hierarchie ('der Größere'), Spanisch das Richterwesen, Italienisch den Rechtsschutz."
+  }
+  ,"Angst":{art:"die",pl:"Ängste",s:"anxiety.n.01",pos:"Substantiv",
+    def_en:"a feeling of worry and fear, often without a specific cause; existential dread — in German also covers concrete fear (Angst vor dem Hund) AND abstract dread (existentielle Angst)",
+    def_de:"Gefühl von Furcht, Beklemmung oder Bedrohung; deckt sowohl konkrete Furcht als auch diffuse existenzielle Angst ab",
+    eq:{es:["miedo (konkret) / angustia (existenziell) / ansiedad (medizinisch)"],en:["fear (konkret) / anxiety (diffus, medizinisch) / Angst (dt. Lehnwort, philosophisch-existenziell)"],fr:["peur (konkret) / angoisse (existenziell) / anxiété (medizinisch)"],pt:["medo (konkret) / angústia (existenziell) / ansiedade (medizinisch)"],it:["paura (konkret) / angoscia (existenziell) / ansia (medizinisch)"]},
+    ej:["Er hat Angst vor Spinnen.","Die existenzielle Angst des modernen Menschen ist ein philosophisches Thema.","Das Kind weinte vor Angst."],
+    hi:["Emotion","Gefühl"],ho:["Prüfungsangst","Flugangst","Zukunftsangst","Todesangst"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"DE 'Angst' deckt zwei konzeptuell verschiedene Zustände ab: (1) konkrete Furcht vor einem Objekt (Angst vor X) und (2) diffuse, objektlose existenzielle Angst. Im Englischen differenziert man 'fear' (konkret) vs 'anxiety' (diffus). Das Fehlen dieser Unterscheidung im DE-Lemma ist lexikografisch relevant.",g:"alta"},
+      {t:"connotacion",l:["en"],d:"Das Lehnwort 'Angst' im Englischen ist auf den philosophisch-existenziellen Sinn (Kierkegaard, Heidegger) spezialisiert und trägt germanisch-philosophische Konnotationen. Es ist nicht austauschbar mit 'anxiety' im medizinischen Kontext.",g:"media"},
+      {t:"equivalente_parcial",l:["es","fr","pt","it"],d:"Alle Zielsprachen differenzieren zwischen dem konkreten Schrecken (miedo/peur/paura) und der diffusen Angst (angustia/angoisse/angoscia). DE 'Angst' nivelliert diese Differenz — der Übersetzer muss den Kontext auswerten.",g:"alta"}
+    ],
+    n:"'Angst' ist ein Paradebeispiel für semantische Polysemie im psychologisch-philosophischen Bereich. Als Lehnwort im Englischen (Kierkegaard-Rezeption) hat es eine spezialisierte Bedeutung erhalten, die vom deutschen Original abweicht."
+  }
+  ,"Zug":{art:"der",pl:"Züge",s:"train.n.01",pos:"Substantiv (extrem polysem)",
+    def_en:"primary meaning: train (railway vehicle) — but also: draught of air, pull/tug, move in chess/game, procession, facial feature, gulp/sip, character trait, military campaign",
+    def_de:"(1) Schienenfahrzeug; (2) Luftzug/Durchzug; (3) Schachzug/Spielzug; (4) Umzug/Festzug; (5) Zug an einer Zigarette; (6) Gesichtszug; (7) Charakterzug; (8) Feldzug",
+    eq:{es:["tren (Bed. 1) / corriente de aire (Bed. 2) / jugada (Bed. 3) / desfile (Bed. 4) / calada (Bed. 5) / rasgo (Bed. 6/7)"],en:["train (Bed. 1) / draught (Bed. 2) / move (Bed. 3) / procession (Bed. 4) / drag/puff (Bed. 5) / feature/trait (Bed. 6/7)"],fr:["train (Bed. 1) / courant d'air (Bed. 2) / coup (Bed. 3) / défilé (Bed. 4) / bouffée (Bed. 5) / trait (Bed. 6/7)"],pt:["trem (Bed. 1) / corrente de ar (Bed. 2) / jogada (Bed. 3) / desfile (Bed. 4) / tragada (Bed. 5) / traço (Bed. 6/7)"],it:["treno (Bed. 1) / corrente d'aria (Bed. 2) / mossa (Bed. 3) / corteo (Bed. 4) / tiro (Bed. 5) / tratto (Bed. 6/7)"]},
+    ej:["Der Zug kommt um 14:32 an.","Es zieht! Mach das Fenster zu — dieser Zug macht mich krank.","Das war ein guter Zug im Schach.","Er nahm einen tiefen Zug an seiner Zigarette.","Sie hat einen melancholischen Zug um den Mund."],
+    hi:["Fortbewegungsmittel","Bewegung","Merkmal"],ho:["ICE","Regionalzug","S-Bahn","Güterzug"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"'Zug' ist eines der polysemsten Wörter im Deutschen mit mindestens 8 lexikografisch relevanten Bedeutungen, die etymologisch alle auf 'ziehen' zurückgehen. Kein Äquivalent in den Zielsprachen deckt mehr als eine oder zwei Bedeutungen ab.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"'Train' kommt von frz. 'traîner' (schleppen) und ist etymologisch verwandt. Aber für alle anderen Bedeutungen von DE 'Zug' sind völlig verschiedene EN-Wörter nötig — keine gemeinsame Wurzel.",g:"media"},
+      {t:"registro",l:["de"],d:"'Zug' in der Bedeutung 'Luftzug/Durchzug' ist regional: in Bayern/Österreich sagt man 'Durchzug', in Norddeutschland 'Zugluft'. Die regionale Verteilung der Synonyme ist lexikografisch zu vermerken.",g:"baja"}
+    ],
+    n:"'Zug' ist ein Musterbeispiel für radiale Polysemie: alle Bedeutungen strahlen von der Grundbedeutung 'Bewegung durch Ziehen' aus. Im Wörterbuch stellt sich die Frage, ob es sich um ein Lemma mit Bedeutungsvarianten oder um Homonyme handelt."
+  }
+  ,"Fahrrad":{art:"das",pl:"Fahrräder",s:"bicycle.n.01",pos:"Substantiv",
+    def_en:"a two-wheeled vehicle propelled by pedalling; German compound: Fahr (travel/ride) + Rad (wheel)",
+    def_de:"Zweirädriges, muskelbetriebenes Fahrzeug; wörtlich: Fahr+Rad (Reise+Rad)",
+    eq:{es:["bicicleta (von it. biciclo, lat. bi+cyclus=zwei Räder)"],en:["bicycle (griech.-lat. bi+cyclus) / bike (umgangssprachlich)"],fr:["vélo (Kurzform von vélocipède = Schnellfüßler) / bicyclette (formal)"],pt:["bicicleta (wie ES)"],it:["bicicletta (wie ES/EN)"]},
+    ej:["Ich fahre jeden Tag mit dem Fahrrad zur Arbeit.","Das Fahrrad wurde im 19. Jahrhundert erfunden."],
+    hi:["Fahrzeug","Fortbewegungsmittel"],ho:["Rennrad","Mountainbike","E-Bike","Lastenrad"],
+    probs:[
+      {t:"connotacion",l:["de"],d:"'Fahrrad' ist motivationsbasiert (Fahr+Rad): beschreibt die Funktion (fahren) und den Bestandteil (Rad). Im Gegensatz dazu fokussiert 'bicycle' auf die Zweizahl der Räder, 'vélo/vélocipède' auf die Schnelligkeit. Drei völlig verschiedene konzeptuelle Zugänge zum gleichen Objekt.",g:"media"},
+      {t:"registro",l:["de"],d:"Im Deutschen ist 'Fahrrad' (formal), 'Rad' (umgangssprachlich: 'Ich nehme das Rad') und 'Bike' (modern, anglizistisch) gleichzeitig in Gebrauch. 'Bike' verdrängt im Alltag 'Fahrrad'. Im Englischen ist 'bike' die häufigere Alltagsform.",g:"baja"}
+    ],
+    n:"'Fahrrad' illustriert, wie verschiedene Kulturen dasselbe Objekt über unterschiedliche konzeptuelle Eigenschaften lexikalisieren: Funktion (DE), Bauform (EN), Bewegungsqualität (FR). Klassisches Thema in der motivierten Lexikologie."
+  }
+  ,"Kongress":{art:"der",pl:"Kongresse",s:"congress.n.01",pos:"Substantiv",
+    def_en:"(1) a formal conference or assembly of specialists/representatives; (2) in English exclusively: the US legislative body (Capitol Hill)",
+    def_de:"(1) Wissenschaftliche oder politische Versammlung, Tagung; (2) in EN spezialisiert: das US-amerikanische Parlament",
+    eq:{es:["congreso (beide Bedeutungen: Tagung + Parlament) / conferencia (nur Tagung)"],en:["conference / congress (Bed. 1 formell) — ACHTUNG: 'Congress' (EN) = US-Parlament!"],fr:["congrès (beide Bedeutungen wie ES)"],pt:["congresso (beide Bedeutungen)"],it:["congresso (beide Bedeutungen)"],"ar":["مؤتمر (mu'tamar) — تحذير: Congress (EN) = الكونغرس الأمريكي"],"ru":["конгресс (kongress) — 1: съезд/конференция; 2: Конгресс США"]},
+    ej:["Der internationale Kongress für Lexikografie findet in Wien statt.","Der US-Kongress hat das Gesetz verabschiedet.","Wir treffen uns auf dem Kongress nächste Woche."],
+    hi:["Versammlung","Gruppe","Tagung"],ho:["Parteitag","Gipfeltreffen","Symposium","Fachkonferenz"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"Im englischen Alltag ist 'Congress' primär mit dem US-amerikanischen Parlament assoziiert. Einen 'wissenschaftlichen Kongress' würde ein Muttersprachler eher 'conference' nennen. DE 'Kongress' in einem Vortrag mit 'congress' zu übersetzen kann Verwirrung auslösen.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"'Conference' ist das pragmatisch korrektere Äquivalent für DE 'Kongress' (Fachtagung). 'Congress' wäre formal korrekt, ist aber semantisch überlastet durch die parlamentarische Bedeutung.",g:"media"}
+    ],
+    n:"'Kongress' zeigt, wie institutionelle Spezialisierung eines Worts in einer Sprachgemeinschaft (EN: US-Parlament) die Übersetzbarkeit einschränkt. Der Lexikograf muss die kulturell dominante Lesart der Zielsprache vermerken."
+  }
+  ,"Dialekt":{art:"der",pl:"Dialekte",s:"dialect.n.01",pos:"Substantiv",
+    def_en:"a regional variety of a language, differing in vocabulary, grammar and/or pronunciation from the standard language",
+    def_de:"Regionale Sprachvarietät; im Deutschen zusätzlich abzugrenzen von: Mundart (mündlich, traditionell), Umgangssprache (informell, überregional) und Soziolekt (soziale Gruppe)",
+    eq:{es:["dialecto — aber: la lingüística hispánica distingue dialecto / variedad diatópica según perspectiva teórica"],en:["dialect — aber: EN unterscheidet dialect (regional) / accent (Aussprache) / variety (neutral, modern)"],fr:["dialecte / patois (ländlich, abwertend) / parler (neutral)"],pt:["dialeto (PE) / dialecto (alt.) / variedade regional"],it:["dialetto — aber: in IT hat 'dialetto' eine starke Bedeutung als eigenständiges Sprachsystem (z. B. Venezianisch)"]},
+    ej:["Der bairische Dialekt ist für Norddeutsche schwer verständlich.","Sie spricht einen starken Dialekt.","In der Dialektologie unterscheidet man Ober-, Mittel- und Niederdeutsch."],
+    hi:["Sprache","Sprachvarietät"],ho:["Mundart","Umgangssprache","Soziolekt","Idiolekt"],
+    probs:[
+      {t:"connotacion",l:["it"],d:"'Dialetto' im Italienischen bezeichnet oft historisch eigenständige Sprachen (Veneto, Neapolitanisch), die sich strukturell stark vom Standarditalienischen unterscheiden. DE 'Dialekt' hat diese Konnotation der Eigenständigkeit weniger stark.",g:"alta"},
+      {t:"connotacion",l:["fr"],d:"'Patois' (FR) hat eine abwertende Konnotation (bäuerliche, rückständige Sprache). 'Dialecte' ist neutraler. 'Parler' ist die moderne, neutrale Entsprechung in der FR Soziolinguistik. Die Äquivalenzwahl hängt vom Register ab.",g:"media"},
+      {t:"polisemia",l:["de"],d:"Im Deutschen konkurrieren 'Dialekt' (wissenschaftlich/neutral), 'Mundart' (traditionell, literarisch, positiv konnotiert) und 'Umgangssprache' (teilweise überlappend). Diese Dreiteilung existiert in keiner Zielsprache in dieser Form.",g:"media"}
+    ],
+    n:"'Dialekt' ist ein Kernthema der kontrastiven Lexikologie: Die Terminologie für Sprachvarietäten ist wissenschaftlich nicht standardisiert und kulturell hochgradig markiert. Ein Wörterbuch der Linguistikterminologie muss diese Differenzierungen explizit machen."
+  }
+  ,"Stipendiat":{art:"der",pl:"Stipendiaten",s:"scholarship_holder.n.01",pos:"Substantiv",
+    def_en:"a person who receives a scholarship or fellowship — in German the person, not the money",
+    def_de:"Person, die ein Stipendium erhält; zu unterscheiden von 'Stipendium' (das Geld/die Förderung selbst)",
+    eq:{es:["becario/a (die Person) / beca (das Geld)"],en:["scholarship holder / fellow / scholar — ACHTUNG: 'stipend' (EN) = das Geld, nicht die Person!"],fr:["boursier/boursière (die Person) / bourse (das Geld)"],pt:["bolseiro/a (PT) / bolsista (BR) / bolsa (das Geld)"],it:["borsista (die Person) / borsa di studio (das Geld)"]},
+    ej:["Sie ist Stipendiatin der Deutschen Forschungsgemeinschaft.","Als Stipendiat hat er freien Eintritt in die Bibliothek."],
+    hi:["Student","Geförderter"],ho:["DAAD-Stipendiat","Fulbright-Stipendiat","Promotionsstipendiat"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"FALSCHER FREUND: 'stipend' (EN) = das Geld/die Vergütung (monatliche Zahlung), nicht die Person. DE 'Stipendiat' = scholarship holder/fellow. Der Irrtum führt zu semantisch falschen Aussagen: 'He is a stipend' wäre Unsinn.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"'Scholar' (EN) kann Stipendiat bedeuten, hat aber die primäre Bedeutung 'Gelehrter/Wissenschaftler'. 'Fellow' ist kontextabhängig (kann auch Mitglied eines akademischen Gremiums sein). Keines der EN-Äquivalente ist eindeutig.",g:"media"}
+    ],
+    n:"'Stipendiat' gehört zur akademischen Fachterminologie, in der falsche Freunde besonders folgenreich sind (Antragssprache, Lebensläufe, Bewerbungen). Die Person-Geld-Unterscheidung (Stipendiat vs. Stipendium) ist in allen Zielsprachen vorhanden, aber lexikalisch anders kodiert."
+  }
+  ,"Bürger":{art:"der",pl:"Bürger / Bürgerinnen",s:"citizen.n.01",pos:"Substantiv",
+    def_en:"(1) citizen: a person who is a legally recognized member of a state; (2) historically: bourgeois, member of the urban middle class (Bürgertum)",
+    def_de:"(1) Staatsbürger (juristische Bedeutung); (2) historisch: Angehöriger des städtischen Bürgertums (Mittelschicht); (3) in Komposita: Bürgerrecht, Bürgermeister, Bürgersinn",
+    eq:{es:["ciudadano/a (juristisch, Bed. 1) / burgués/burguesa (historisch, Bed. 2)"],en:["citizen (juristisch, Bed. 1) / bourgeois (historisch, Bed. 2) / burgher (veraltet, historisch)"],fr:["citoyen/citoyenne (juristisch) / bourgeois(e) (historisch/soziologisch)"],pt:["cidadão/cidadã (juristisch) / burguês/burguesa (historisch)"],it:["cittadino/a (juristisch) / borghese (historisch/soziologisch)"]},
+    ej:["Alle Bürger haben das Recht zu wählen.","Das Bürgertum entstand im 18. und 19. Jahrhundert.","Sie engagiert sich im Bürgerverein ihres Stadtteils."],
+    hi:["Person","Mitglied einer Gemeinschaft"],ho:["Staatsbürger","Wahlbürger","Neubürger"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"DE 'Bürger' übernimmt zwei getrennte Konzepte: die juristische Staatsangehörigkeit (EN 'citizen') UND die soziologische Klassenbezeichnung (EN 'bourgeois'). Im Englischen sind diese strikt getrennte Wörter mit unterschiedlichen Etymologien.",g:"alta"},
+      {t:"connotacion",l:["fr"],d:"'Bourgeois' hat im Französischen — beeinflusst durch die marxistische Tradition und die Revolutionsgeschichte — eine deutlich negativere Konnotation als DE 'Bürger'. 'Citoyen' hingegen ist positiv besetzt (Révolution française: 'Bürger X'). Die politische Geschichte färbt die Wörter.",g:"alta"},
+      {t:"connotacion",l:["es"],d:"'Ciudadano' (ES) und 'burgués' (ES) sind klar getrennt. 'Burgués' hat durch den spanischen Kontext der Klassenkritik ebenfalls eine überwiegend negative Färbung, die im neutralen DE 'Bürger' (außer in explizit marxistischen Texten) fehlt.",g:"media"}
+    ],
+    n:"'Bürger' ist ein Schlüsselwort der politischen Lexikologie: die Überlagerung von Staatsbürgerschaft und Klassenbezeichnung in einem einzigen deutschen Wort reflektiert die historische Verknüpfung von bürgerlichen Rechten und Bürgertum als Klasse."
+  }
+  ,"Keller":{art:"der",pl:"Keller",s:"cellar.n.01",pos:"Substantiv",
+    def_en:"an underground room or floor, typically used for storage; in German culture: the Keller is a central domestic and social space (wine cellar, Bierkeller, Partykeller)",
+    def_de:"Unterirdischer Raum eines Gebäudes; im deutschen Kontext wichtiger Alltagsraum mit starken kulturellen Konnotationen (Vorratsraum, Weinkeller, Partykeller, Hobbyraum)",
+    eq:{es:["sótano (Untergeschoss, auch bewohnbar) / bodega (Weinkeller, Vorratskeller)"],en:["cellar (Keller, v. a. Vorratskeller/Weinkeller) / basement (Untergeschoss, oft bewohnbar/ausgebaut)"],fr:["cave (Weinkeller/Vorratskeller) / sous-sol (Untergeschoss, bewohnbar)"],pt:["cave (PT, Weinkeller) / porão (Keller/Untergeschoss) / subsolo"],it:["cantina (Weinkeller/Vorratskeller) / seminterrato (Untergeschoss)"]},
+    ej:["Im Keller lagern wir Kartoffeln und Eingemachtes.","Der Bierkeller war voll mit Gästen.","Unser Keller dient als Hobbyraum."],
+    hi:["Raum","Gebäudeteil"],ho:["Weinkeller","Bierkeller","Vorratskeller","Partykeller","Hobbyraum"],
+    probs:[
+      {t:"equivalente_parcial",l:["en"],d:"'Cellar' (EN) betont den Vorrats- und Weinkeller (unbewohnbar, dunkel). 'Basement' ist ausgebaut und oft bewohnbar (Wohnung, Büro). DE 'Keller' ist breiter und deckt beide Konzepte ab, von der Kartoffelkiste bis zum Partyraum.",g:"media"},
+      {t:"equivalente_parcial",l:["es"],d:"'Sótano' (ES) ist konzeptuell näher an EN 'basement' (Untergeschoss, oft bewohnbar). 'Bodega' hat die Konnotation Wein-/Vorratsraum, aber auch Lebensmittelladen (Latinoamerika). Der Kontext entscheidet.",g:"media"},
+      {t:"connotacion",l:["de"],d:"'Keller' hat in der deutschen Wohnkultur eine besondere Stellung: Kellerschränke, Kellerpartys, Bierkeller. Diese kulturellen Konnotationen sind in den Äquivalenten nicht enthalten und können bei der Übersetzung literarischer Texte verloren gehen.",g:"baja"}
+    ],
+    n:"'Keller' illustriert, wie kulturelle Nutzungsmuster die Semantik eines Worts prägen. Der deutsche Keller als Allzweckraum (Lager, Party, Hobby) ist kulturell stärker markiert als die Äquivalente anderer Sprachen."
+  }
+  ,"Herz":{art:"das",pl:"Herzen",s:"heart.n.01",pos:"Substantiv",
+    def_en:"(1) the hollow muscular organ that pumps blood; (2) seat of emotions and love; (3) term of endearment; (4) the suit 'hearts' in cards; (5) central part of something",
+    def_de:"(1) Herzorgan; (2) Sitz der Gefühle; (3) Kosewort (Mein Herz!); (4) Kartenfarbe Herz; (5) Kern einer Sache (das Herz der Stadt)",
+    eq:{es:["corazón (alle Bed. — sehr kongruent mit DE)"],en:["heart (alle Bed. — sehr kongruent mit DE)"],fr:["cœur (alle Bed. — sehr kongruent mit DE)"],pt:["coração (alle Bed. — sehr kongruent mit DE)"],it:["cuore (alle Bed. — sehr kongruent mit DE)"]},
+    ej:["Das Herz schlägt ca. 70-mal pro Minute.","Sie hat ein großes Herz für Menschen in Not.","Mein Herz! — als Kosewort.","Ich habe keine Herzen mehr auf der Hand.","Das Herz der Altstadt liegt am Marktplatz."],
+    hi:["Organ","Gefühl"],ho:["Herzklappen","Herzinfarkt","Herzrhythmus"],
+    probs:[
+      {t:"equivalente_parcial",l:["en"],d:"Obwohl 'heart' und 'Herz' sehr kongruent sind, unterscheiden sich die pragmatischen Verwendungen: 'My heart!' als Kosewort klingt im Englischen veraltet oder theatralisch. Der übliche EN-Ausdruck wäre 'darling' oder 'sweetheart'.",g:"media"},
+      {t:"connotacion",l:["en"],d:"'Have a heart' (EN) = sei mitfühlend / hab Erbarmen. 'Ein Herz haben' (DE) = dasselbe. Aber 'have heart' (EN, ohne Artikel) = mutig sein/Durchhaltevermögen haben. Die Metaphern überlappen sich nicht vollständig.",g:"baja"},
+      {t:"connotacion",l:["de"],d:"Im Deutschen ist das Herz der Sitz des echten Gefühls ('von Herzen', 'herzlich', 'herzhaft'). Das Adjektiv 'herzlich' hat keine direkte emotionale Entsprechung: 'heartfelt' (EN) ist formeller; 'cordial' (von lat. cor=Herz) klingt distanzierter.",g:"baja"}
+    ],
+    n:"'Herz' ist ein seltener Fall hoher konzeptueller Kongruenz über Sprachen hinweg. Die lexikografische Aufgabe liegt nicht in der Äquivalenzfindung, sondern in der Dokumentation feiner pragmatischer Unterschiede — ein wichtiges Korrektiv gegen Übersimplifizierung."
+  }
+  ,"Rock":{art:"der",pl:"Röcke",s:"skirt.n.01",pos:"Substantiv",
+    def_en:"(1) skirt (women's garment); (2) in compounds: Gehrock (frock coat), Kittel; — completely unrelated to English 'rock' (music genre / stone)",
+    def_de:"(1) Kleidungsstück (Damenrock, Minirock); (2) historisch auch Männerrock (Gehrock, Uniformrock); völlig unverwandt mit dem Musikgenre 'Rock'",
+    eq:{es:["falda (Kleidung Bed. 1) — nada que ver con 'rock' (música)"],en:["skirt (Kleidung Bed. 1) — ACHTUNG: 'rock' (EN) = Stein / Rockmusik, NICHT Rock (Kleidung)!"],fr:["jupe (Kleidung Bed. 1) — 'rock' (FR, Musik) ist ein Anglizismus"],pt:["saia (Kleidung Bed. 1)"],it:["gonna (Kleidung Bed. 1)"]},
+    ej:["Sie trägt einen langen Rock zum Konzert.","Der Minirock wurde in den 1960er Jahren populär.","Gehst du heute auf das Rockkonzert? — Hier ist 'Rock' Musik, nicht Kleidung!"],
+    hi:["Kleidungsstück","Bekleidung"],ho:["Minirock","Maxirock","Faltenrock","Bleistiftrock"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"FALSCHER FREUND: DE 'Rock' (Kleidung) = EN 'skirt'. EN 'rock' = (1) Stein/Felsen oder (2) Rockmusik. Diese Homonymie existiert nur in der Kombination DE/EN und ist eine häufige Quelle von Missverständnissen und Schreibfehlern.",g:"alta"},
+      {t:"polisemia",l:["de"],d:"DE 'Rock' deckt historisch auch Männerkleidung ab (Gehrock, Uniformrock, Kittel in manchen Regionen). Im modernen Deutsch ist 'Rock' fast ausschließlich weiblich konnotiert, aber ältere oder fachliche Texte können die andere Bedeutung aktivieren.",g:"media"},
+      {t:"connotacion",l:["fr","pt","it"],d:"'Jupe', 'saia' und 'gonna' sind eindeutig und ohne Falsche-Freund-Gefahr. Das Problem ist typisch für DE/EN-Paare und hat keine Entsprechung in den romanischen Sprachen.",g:"baja"}
+    ],
+    n:"'Rock' ist ein Paradebeispiel für einen intertextuellen falschen Freund, der durch Musikkultur verstärkt wird: Lernende assoziieren das deutsche Wort sofort mit Rockmusik und nicht mit dem Kleidungsstück. Ideal für Sensibilisierungsübungen."
+  }
+  ,"Mahlzeit":{art:"die",pl:"Mahlzeiten",s:"meal.n.01",pos:"Substantiv",
+    def_en:"(1) a meal, an occasion when food is eaten; (2) interjection of greeting at mealtimes ('Guten Appetit!'); (3) ironic/sarcastic exclamation expressing dismay or disbelief",
+    def_de:"(1) Essen als Ereignis (Mahlzeit einnehmen); (2) Gruß beim Essen (Mahlzeit!); (3) ironisch: Ausruf bei unangenehmen Neuigkeiten ('Na, Mahlzeit!' = Das ist ja eine schöne Bescherung)",
+    eq:{es:["comida (Bed. 1) / ¡Buen provecho! (Bed. 2) / ¡Vaya! / ¡Menudo asunto! (Bed. 3)"],en:["meal (Bed. 1) / Enjoy your meal / Bon appétit (Bed. 2) / Well, that's just great (ironisch, Bed. 3)"],fr:["repas (Bed. 1) / Bon appétit! (Bed. 2) / C'est du joli! (ironisch, Bed. 3)"],pt:["refeição / refeição (Bed. 1) / Bom apetite! (Bed. 2)"],it:["pasto (Bed. 1) / Buon appetito! (Bed. 2)"]},
+    ej:["Die Mahlzeit war ausgezeichnet.","Mahlzeit! — Grußformel beim Essen.","Du hast den Schlüssel vergessen? — Na, Mahlzeit! (ironisch)"],
+    hi:["Essen","Mahlzeit"],ho:["Frühstück","Mittagessen","Abendessen"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"'Mahlzeit' ist pragmatisch dreifach funktional: denotativ (das Essen), phatisch (Gruß) und ironisch (Ausruf). Diese drei Verwendungen sind in keiner Zielsprache in einem einzigen Wort gebündelt.",g:"alta"},
+      {t:"laguna_lexica",l:["en"],d:"Im Englischen gibt es keine einzige Entsprechung für den ironischen Gebrauch 'Na, Mahlzeit!'. 'Well, that's just great' ist situativ, aber nicht lexikalisiert als Einwortreaktion. Die Ironie muss in der Übersetzung explizit gemacht werden.",g:"alta"},
+      {t:"registro",l:["de"],d:"'Mahlzeit!' als Gruß unter Kollegen (z.B. nach dem Mittagessen) ist stark alltagssprachlich und regional. In formellen Texten erscheint nur Bedeutung 1. Ein Wörterbuch muss die Pragmatik aller drei Verwendungen mit Registermarkierung verzeichnen.",g:"media"}
+    ],
+    n:"'Mahlzeit' ist ein Musterbeispiel für pragmatische Polysemie: ein Wort, drei kommunikative Funktionen. Für die Lexikografie stellt es die Frage, ob es sich um ein Lemma mit Sublemma-Einträgen oder um drei separate Phraseme handelt."
+  }
+  ,"Wohnung":{art:"die",pl:"Wohnungen",s:"apartment.n.01",pos:"Substantiv",
+    def_en:"a self-contained residential unit within a larger building; the primary DE word for 'apartment' — distinct from Haus (the building) and Zuhause (emotional home)",
+    def_de:"Abgeschlossene Wohneinheit in einem Mehrfamilienhaus; Abgrenzung: Haus (Gebäude), Zuhause (emotionaler Ort), Heim (Institution oder Gefühl)",
+    eq:{es:["piso (ES: Etage/Wohnung) / apartamento (ES-Lat/moderner) / departamento (Mexiko/Arg.)"],en:["flat (BrE) / apartment (AmE) — beide korrekt, aber regional verschieden"],fr:["appartement (allgemein) / logement (neutrale Verwaltungssprache)"],pt:["apartamento (PT/BR allgemein) / andar (PT, Etage=Wohnung)"],it:["appartamento / alloggio (neutrale)"]},
+    ej:["Sie hat eine schöne Wohnung im dritten Stock.","Die Wohnung hat 80 Quadratmeter.","Wir suchen eine Zweizimmerwohnung in der Nähe des Bahnhofs."],
+    hi:["Wohnraum","Unterkunft","Gebäudeteil"],ho:["Einzimmerwohnung","Altbauwohnung","Neubauwohnung","Dachgeschosswohnung"],
+    probs:[
+      {t:"variacion_dialectal",l:["en"],d:"'Flat' (BrE) vs. 'apartment' (AmE) ist eine strenge geographische Variante, kein Registerunterschied. DE 'Wohnung' entspricht beiden, aber der Übersetzer muss die Zielvarietät wählen — ein häufiger Entscheidungspunkt in der Praxis.",g:"media"},
+      {t:"equivalente_parcial",l:["es"],d:"'Piso' (ES) bedeutet primär 'Stockwerk' (Etage) und sekundär 'Wohnung'. 'Apartamento' ist eindeutiger für die Wohneinheit. In Lateinamerika: 'departamento'. Drei Wörter für denselben Referenten — regional verteilt.",g:"media"},
+      {t:"equivalente_parcial",l:["de"],d:"Im Deutschen: 'Wohnung' (neutral), 'Appartement' (Anglizismus/Gallizismus, kleiner/gehobener), 'Apartment' (modern, oft Einzimmer). 'Zuhause' und 'Heim' überlappen sich mit 'Wohnung', haben aber stärkere affektive Konnotationen.",g:"baja"}
+    ],
+    n:"'Wohnung' ist ein ideales Einstiegswort für die Diskussion über Varietätenmarkierung im Wörterbuch: BrE/AmE, ES-peninsular/hispanoamericano. Die Äquivalenzrelation ist nicht Wort:Wort, sondern Wort:Varietätenpaar."
+  }
+  ,"Sozialist":{art:"der",pl:"Sozialisten / Sozialistinnen",s:"socialist.n.01",pos:"Substantiv",
+    def_en:"a person who believes in or supports socialism — but the political valence of this term differs radically between European and American contexts",
+    def_de:"Person, die den Sozialismus als Wirtschafts- und Gesellschaftsordnung befürwortet; in Westeuropa oft neutral bis positiv konnotiert (SPD, PS, PSOE sind 'sozialistisch')",
+    eq:{es:["socialista — neutral/positivo en contexto europeo, negativo en contexto latinoamericano (Venezuela, Cuba)"],en:["socialist — en contexto europeo: neutral; en contexto estadounidense: carga negativa muy fuerte (McCarthy, red-baiting)"],fr:["socialiste — neutral/positif, parti dominant de la gauche française (PS)"],pt:["socialista — neutral, PS portugués / PSB brasileño"],it:["socialista — neutral/positivo, PSI storico"]},
+    ej:["Er ist Mitglied der sozialistischen Partei.","In den USA gilt 'Sozialist' als Schimpfwort in konservativen Kreisen.","Die sozialistische Internationale vereint Parteien aus 60 Ländern."],
+    hi:["politische Person","Ideologe"],ho:["Demokratischer Sozialist","Marxist","Sozialdemokrat"],
+    probs:[
+      {t:"connotacion",l:["en"],d:"KONNOTATIONSUNTERSCHIED: Im amerikanischen Englisch ist 'socialist' seit dem McCarthyismus (1950er) politisch hochgradig negativ aufgeladen und wird als Schimpfwort verwendet. Im europäischen Englisch und in DE/FR/ES ist das Wort politisch neutral bis positiv. Derselbe Begriff, radikaler Konnotationsunterschied je nach Kulturraum.",g:"alta"},
+      {t:"connotacion",l:["es"],d:"In Lateinamerika (Venezuela, Kuba, Nicaragua) hat 'socialista' eine starke Verknüpfung mit autoritären Regimen erhalten. In Spanien und anderen EU-Ländern ist 'socialista' der Name der größten Regierungspartei (PSOE). Dieselbe intersprachliche Spaltung wie im Englischen.",g:"alta"},
+      {t:"generisches_maskulinum",l:["de"],d:"'Sozialist' ist maskulines Genus; 'Sozialistin' die feminine Form. In modernen politischen Texten werden zunehmend Gendersterne ('Sozialist*innen') oder Doppelformen verwendet. Die romanischen Sprachen haben analoge feminine Formen.",g:"baja"}
+    ],
+    n:"'Sozialist' ist ein Musterfall für kulturabhängige Konnotationsverschiebungen politischer Lexik. Der Lexikograf muss explizit angeben: welcher Kulturraum, welche Epoche, welches Register — das Wort allein genügt nicht."
+  }
+  ,"Botschafter":{art:"der",pl:"Botschafter / Botschafterinnen",s:"ambassador.n.01",pos:"Substantiv",
+    def_en:"the highest-ranking diplomatic representative of one country to another; German compound: Botschaft (message) + -er (agent suffix)",
+    def_de:"Ranghöchster diplomatischer Vertreter eines Landes bei einem anderen Staat oder einer internationalen Organisation; Kompositum: Botschaft (Nachricht/Auftrag) + -er",
+    eq:{es:["embajador/a (von lat. ambactus = Gefolgsmann, keltische Wurzel)"],en:["ambassador (von it. ambasciatore, germanisch ambactus = Dienst)"],fr:["ambassadeur/ambassadrice (gleiche Etymologie wie EN/ES)"],pt:["embaixador/a (gleiche Etymologie)"],it:["ambasciatore/ambasciatrice (Etymologie-Ursprung des EN/FR/ES-Worts)"]},
+    ej:["Die Botschafterin überreichte ihr Beglaubigungsschreiben.","Der deutsche Botschafter in Tokio wurde einbestellt.","Als Botschafter des guten Willens reiste sie in Krisengebiete."],
+    hi:["Diplomat","Amtsträger"],ho:["Botschafter bei der EU","Sonderbotschafter","Kulturbotschafter"],
+    probs:[
+      {t:"connotacion",l:["de"],d:"Das DE Kompositum 'Botschaft+er' motiviert den Begriff über die Funktion (jemand, der eine Botschaft trägt). Die romanischen und englischen Äquivalente gehen auf germanisch 'ambactus' (Diener, Gefolgsmann) zurück — eine feudale, keine kommunikative Motivation. Zwei völlig verschiedene konzeptuelle Zugänge zur diplomatischen Funktion.",g:"media"},
+      {t:"generisches_maskulinum",l:["de"],d:"'Botschafter' ist maskulin; 'Botschafterin' die weibliche Form. Im Englischen ist 'ambassador' geschlechtsneutral. Die zunehmende Sichtbarkeit weiblicher Diplomatinnen macht die Feminisierung im Deutschen zu einem aktuellen lexikografischen Thema.",g:"baja"}
+    ],
+    n:"'Botschafter' illustriert, wie Komposita die Lexikalisierung konzeptuell motivieren. Das Wort erklärt die Funktion (Botschaft tragen), während die romanischen/englischen Äquivalente historisch-feudale Beziehungen kodieren. Ideal zur Diskussion über Wortbildungsmotivation."
+  }
+  ,"Rezept":{art:"das",pl:"Rezepte",s:"recipe.n.01",pos:"Substantiv",
+    def_en:"(1) recipe: instructions for preparing a dish; (2) prescription: a doctor's written order for medicine — German uses ONE word for both; English, Spanish, French use different words",
+    def_de:"(1) Kochrezept: Anleitung zur Zubereitung einer Speise; (2) Arztrezept: ärztliche Verschreibung für Medikamente; (3) übertragen: Rezept für Erfolg/Frieden",
+    eq:{es:["receta (BEIDE Bedeutungen — wie DE, sehr kongruent!)"],en:["recipe (Bed. 1: Kochen) / prescription (Bed. 2: Medizin) — zwei VERSCHIEDENE Wörter!"],fr:["recette (Bed. 1: Kochen) / ordonnance (Bed. 2: Medizin) — zwei VERSCHIEDENE Wörter!"],pt:["receita (BEIDE Bedeutungen — wie DE und ES, kongruent)"],it:["ricetta (BEIDE Bedeutungen — wie DE, ES, PT, kongruent)"]},
+    ej:["Das Rezept für die Schwarzwälder Kirschtorte ist kompliziert.","Der Arzt hat mir ein Rezept für Antibiotika ausgestellt.","Das Rezept für Frieden ist Geduld und Dialog."],
+    hi:["Anleitung","Dokument"],ho:["Kochrezept","Arztrezept","Familienrezept"],
+    probs:[
+      {t:"equivalente_parcial",l:["en"],d:"Im Englischen sind 'recipe' (Kochen) und 'prescription' (Medizin) strikt getrennt — verschiedene Wörter mit verschiedenen Etymologien. DE 'Rezept' und ES/PT/IT 'receta/receita/ricetta' sind polysemer als EN und FR.",g:"alta"},
+      {t:"equivalente_parcial",l:["fr"],d:"Im Französischen: 'recette' (Kochen, aber auch: Einnahmen/Erlös!) und 'ordonnance' (Rezept vom Arzt, aber auch: Erlass/Verordnung). FR hat stärkere Polysemie bei 'recette' als DE 'Rezept' — ein interessantes Kreuzungsmuster.",g:"media"},
+      {t:"connotacion",l:["fr"],d:"'Recette' (FR) bedeutet neben Kochrezept auch 'Einnahmen' (die Tageseinnahmen eines Ladens). DE 'Rezept' hat diese finanzielle Bedeutung nicht. Wer 'Rezept' mit 'recette' übersetzt, muss diesen Polysemieunterschied kennen.",g:"media"}
+    ],
+    n:"'Rezept' zeigt ein Polysemiemuster, das im Deutschen, Spanischen, Portugiesischen und Italienischen kongruent ist, im Englischen und Französischen aber aufgespalten wird. Lexikografisch wichtig: der Sprachvergleich enthüllt, wo die konzeptuellen Grenzen gezogen werden."
+  }
+  ,"Dozent":{art:"der",pl:"Dozenten / Dozentinnen",s:"lecturer.n.01",pos:"Substantiv",
+    def_en:"a university teacher who lectures; in Germany typically below Professur — but the academic rank system differs significantly between countries",
+    def_de:"Lehrperson an einer Hochschule, die Lehrveranstaltungen hält; im deutschen System unter dem Professor angesiedelt; 'Privatdozent' hat Habilitationsrecht",
+    eq:{es:["profesor/a (allgemein) / docente universitario (formell) — ES kennt keine direkte Rangentsprechung"],en:["lecturer (BrE, entspricht am ehesten) / instructor (AmE, unterer Rang) / faculty (AmE, allgemein)"],fr:["maître de conférences (dem Dozenten am nächsten, Rang unter Professeur)"],pt:["professor/a auxiliar (PT) / professor (BR allgemein)"],it:["ricercatore/professore associato (Rang ähnlich) / docente (allgemein)"]},
+    ej:["Die Dozentin hielt eine Vorlesung über kontrastive Linguistik.","Als Privatdozent hat er das Recht, selbstständig Lehrveranstaltungen anzubieten.","Er ist Dozent, kein Professor — der Unterschied ist im deutschen Hochschulrecht wichtig."],
+    hi:["Lehrperson","Hochschullehrer"],ho:["Privatdozent","Lehrbeauftragter","Juniorprofessor"],
+    probs:[
+      {t:"equivalente_parcial",l:["en"],d:"'Lecturer' (BrE) entspricht am ehesten, ist aber im britischen System ein fester Angestellter, während DE 'Dozent' eine breitere Kategorie ist (von Lehrbeauftragten bis Privatdozenten). AmE 'instructor' ist rangniedriger. Kein EN-Wort bildet die DE-Kategorie genau ab.",g:"alta"},
+      {t:"equivalente_parcial",l:["fr"],d:"'Maître de conférences' ist der dem deutschen Dozenten strukturell ähnlichste Rang im FR System, aber es ist ein fester Beamtenstatus — sehr verschieden vom flexiblen deutschen 'Dozent'. Institutionelle Äquivalenz ≠ strukturelle Äquivalenz.",g:"alta"},
+      {t:"polisemia",l:["de"],d:"'Dozent' in Deutschland ist keine einheitliche Stelle: Privatdozent (habilitiert, kein festes Gehalt), Lehrbeauftragter (nebenberuflich), wissenschaftlicher Mitarbeiter mit Lehrverpflichtung. Das Wort verbirgt eine große institutionelle Heterogenität.",g:"media"}
+    ],
+    n:"'Dozent' ist ein Beispiel für institutionell bedingte Nichtäquivalenz: Hochschulsysteme sind national verschieden, und akademische Titel lassen sich nicht direkt übersetzen, sondern nur funktional annähern. Besonders relevant für Lebensläufe und akademische Bewerbungen."
+  }
+  ,"Liberal":{art:"der/die",pl:"Liberale",s:"liberal.n.01",pos:"Substantiv / Adjektiv",
+    def_en:"a person or position favouring liberal values — but the political orientation this implies differs radically between European and American contexts",
+    def_de:"Person, die liberale Werte vertritt; in DE/EU: wirtschaftlicher Liberalismus, individuelle Freiheitsrechte, Marktwirtschaft (FDP, Liberale Internationale); politisch eher Mitte bis Mitte-rechts",
+    eq:{es:["liberal — ES: económicamente liberal = centro-derecha, como DE"],en:["liberal — EN (AmE): PROGRESISTA / IZQUIERDA. EN (BrE): centrista (Lib Dems). Significado OPUESTO al alemán en EE.UU."],fr:["libéral — FR: liberal económico = centro-derecha, como DE/ES"],pt:["liberal — PT: similar a DE/ES/FR"],it:["liberale — IT: similar a DE/ES/FR"],"ar":["ليبرالي (lībīrālī) — المعنى السياسي يتباين حسب السياق الإقليمي"],"ru":["либерал (liberal) — в России: часто негативная коннотация"]},
+    ej:["Die Liberalen kämpfen für weniger Staatseingriffen in die Wirtschaft.","She is a liberal senator who supports universal healthcare. (EN: hier = LINKS)","In Germany, the FDP is the liberal party."],
+    hi:["politische Person","Ideologe"],ho:["Wirtschaftsliberaler","Sozialliberaler","Libertärer"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"SCHWERWIEGENDER FALSCHER FREUND: 'liberal' (AmE) = links/progressiv/sozialdemokratisch. 'Liberal' (DE/ES/FR/IT) = wirtschaftsliberal = eher Mitte bis Mitte-rechts. In der US-amerikanischen politischen Rhetorik ist 'liberal' ein Kampfbegriff der Rechten gegen die Linke. In Deutschland ist 'Liberal' der Eigenname der FDP.",g:"alta"},
+      {t:"variacion_dialectal",l:["en"],d:"Innerhalb des Englischen: AmE 'liberal' (linksprogressiv) vs. BrE 'liberal' (Lib Dems, zentristisch). Dieselbe transatlantische Spaltung wie im Deutschen, aber mit umgekehrten Vorzeichen.",g:"alta"},
+      {t:"connotacion",l:["es"],d:"In Lateinamerika hat 'liberal' historisch die wirtschaftsliberale Seite im 19.-Jahrhundert-Kontext (Kirchentrennung, Föderalismus), aber die Konnotation variiert stark nach Land und historischem Kontext.",g:"media"}
+    ],
+    n:"'Liberal' ist das vielleicht beste Beispiel für politisch-kulturelle Konnotationsasymmetrie zwischen DE/EU und EN/USA. Ein Wort, zwei entgegengesetzte Lager. Unverzichtbar für das Wörterbuch der politischen Lexik."
+  }
+  ,"Schmetterling":{art:"der",pl:"Schmetterlinge",s:"butterfly.n.01",pos:"Substantiv",
+    def_en:"an insect of the order Lepidoptera with large, often colourful wings; found in nearly all world cultures with strikingly different naming motivations",
+    def_de:"Tagfalter (Lepidoptera); das Wort geht auf eine dialektale Form von 'Schmetten/Schmand' (Rahm, Sauerrahm) zurück — Volksglauben: Hexen verwandelten sich in Schmetterlinge und stahlen die Sahne",
+    eq:{es:["mariposa — von 'María pósate' (Maria, setz dich/lande) — religiöse Volksfolkloreetymologie"],en:["butterfly — von 'butter' + 'fly': gelbe Farbe? Oder: Hexe als Butterschmetterling (dieselbe Folklore wie DE!)"],fr:["papillon — von lat. papilio — unklar, ohne Volksmotivation"],pt:["borboleta — unklare Etymologie, Diminutiv von 'borbulha' (Blase)"],it:["farfalla — von lat. farfalla — unklare Motivation, möglicherweise Lautmalerei"]},
+    ej:["Der Schmetterling landet auf der Blume.","In Japan symbolisiert der Schmetterling die Seele.","Der Schmetterlingseffekt — die Metapher aus der Chaostheorie."],
+    hi:["Insekt","Tier"],ho:["Tagfalter","Nachtfalter","Monarchfalter","Admiral"],
+    probs:[
+      {t:"connotacion",l:["en"],d:"EN 'butterfly' und DE 'Schmetterling' teilen paradoxerweise dieselbe Volksüberlieferung (Hexe stiehlt Butter/Rahm), aber beide Sprachen haben diese Motivation unabhängig entwickelt — ein bemerkenswerter Fall paralleler Volksetymologie.",g:"baja"},
+      {t:"laguna_lexica",l:["es"],d:"'Mariposa' (ES) trägt eine religiöse Motivation (María pósate), die in allen anderen Sprachen fehlt. Diese etymologische Einzigartigkeit ist für die kontrastive Lexikologie hochrelevant: Wörter für dasselbe Konzept können radikal verschiedene kulturelle Rahmen aktivieren.",g:"baja"},
+      {t:"equivalente_parcial",l:["es","en","fr"],d:"Im Deutschen unterscheidet man strikt 'Schmetterling' (Tagfalter) von 'Nachtfalter' (Motte). EN 'butterfly'/'moth', ES 'mariposa'/'polilla', FR 'papillon de jour'/'papillon de nuit' machen dieselbe Unterscheidung. IT 'farfalla'/'falena'. Die kategoriale Grenze ist in allen Sprachen ähnlich gezogen.",g:"baja"}
+    ],
+    n:"'Schmetterling' ist ein Musterbeispiel für motivierende Lexikologie: dasselbe Tier, fünf völlig verschiedene konzeptuelle Frames — Butter/Sahne (DE/EN), religiöse Volkspoesie (ES), Laut/Form (IT/PT), Genealogie (FR). Ideal für den Vergleich von Wortbildungsmotivationen."
+  }
+  ,"Nachtisch":{art:"der",pl:"Nachtische",s:"dessert.n.01",pos:"Substantiv",
+    def_en:"the sweet course served at the end of a meal; one of the richest examples of cross-linguistic motivational divergence in everyday vocabulary",
+    def_de:"Süßspeise oder Obst am Ende einer Mahlzeit; Kompositum: nach+Tisch (nach dem Tisch/Essen)",
+    eq:{es:["postre — von lat. posterum = das Nachkommende (Zeitfolge, wie DE)"],en:["dessert — von frz. desservir = den Tisch abräumen (Handlung des Abräumens)"],fr:["dessert — von desservir = abräumen (gleiche Motivation wie EN)"],pt:["sobremesa — über+Tisch (räumliche Metapher: was noch auf dem Tisch liegt)"],it:["dolce — süß (sensorische/geschmackliche Motivation)"]},
+    ej:["Als Nachtisch gibt es Schokoladeneis.","Für den Nachtisch haben wir eine Mousse au Chocolat vorbereitet."],
+    hi:["Speise","Mahlzeit"],ho:["Pudding","Eis","Obst","Kuchen","Mousse"],
+    probs:[
+      {t:"connotacion",l:["es","en","fr","pt","it"],d:"Alle fünf Zielsprachen motivieren 'Nachtisch' über VERSCHIEDENE konzeptuelle Frames: DE/ES über die Zeitabfolge (nach dem Tisch / lo que sigue), EN/FR über die Handlung des Abräumens (des+servir), PT über den Raum (sobre+mesa = was noch auf dem Tisch ist), IT über die Sinneswahrnehmung (dolce = süß). Fünf Sprachen, fünf konzeptuelle Zugänge zum selben Gericht.",g:"media"},
+      {t:"equivalente_parcial",l:["de"],d:"Im Deutschen konkurrieren 'Nachtisch' (allgemein), 'Dessert' (gehobener/französischer Einfluss, Anglizismus/Gallizismus), 'Nachspeise' (formell, Speisekarte) und 'Süßspeise' (breit). Die Wahl ist register- und kontextabhängig.",g:"baja"}
+    ],
+    n:"'Nachtisch' ist ein Lehrbuchbeispiel der motivierten Lexikologie: dieselbe Referenz, fünf verschiedene konzeptuelle Frames. Kann direkt mit 'Fahrrad' und 'Bürgermeister' verglichen werden — alle zeigen dasselbe Phänomen auf anschauliche Weise."
+  }
+  ,"Muttersprache":{art:"die",pl:"Muttersprachen",s:"native_language.n.01",pos:"Substantiv",
+    def_en:"the language a person learns from birth, typically from their parents; also called L1, first language, or native language — each term has different connotations in sociolinguistics",
+    def_de:"Erstsprache; die Sprache, die ein Mensch als Kind zuerst erwirbt; Kompositum: Mutter+Sprache — die Sprache der Mutter als sprachliche Bezugsperson",
+    eq:{es:["lengua materna — gleiche Kompositum-Metapher wie DE (madre/materna = Mutter)"],en:["mother tongue (dieselbe Metapher, compound) / native language (neutral, keine Familienmetapher) / L1 (sprachwissenschaftlich, neutral)"],fr:["langue maternelle — gleiche Metapher wie DE/ES"],pt:["língua materna — gleiche Metapher"],it:["madrelingua — gleiche Metapher (Mutter+Sprache als Kompositum)"]},
+    ej:["Ihre Muttersprache ist Arabisch, aber sie spricht auch Deutsch und Englisch fließend.","Das Konzept der Muttersprache ist in der modernen Linguistik umstritten.","Als Muttersprachler hat sie einen natürlichen Zugang zur Idiomatik."],
+    hi:["Sprache","Erstsprache"],ho:["Erstsprache","Zweitmuttersprache","Umgangssprache","Herkunftssprache"],
+    probs:[
+      {t:"equivalente_parcial",l:["en"],d:"EN unterscheidet 'mother tongue' (familiäre Metapher, traditionell), 'native language' (neutral, ohne Familienkonnotation) und 'L1' (wissenschaftlich). DE 'Muttersprache' deckt alle drei Verwendungen ab — die Zielsprache ist differenzierter.",g:"media"},
+      {t:"connotacion",l:["de"],d:"Das Konzept 'Muttersprache' ist soziolinguistisch umstritten: Es setzt eine einzige Erstsprache voraus (problematisch für mehrsprachig aufgewachsene Kinder) und eine Mutter als Sprachvermittlerin (problematisch für Adoptiv- oder Vaterfamilien). 'Erstsprache' gilt als neutralere Alternative. Im Wörterbuch sollte dieser Konnotationsunterschied vermerkt werden.",g:"media"},
+      {t:"connotacion",l:["es","fr","pt","it"],d:"Alle romanischen Sprachen teilen die Muttermetapher (materna/maternelle/madrelingua). Die familiäre Konnotation ist damit panaeuropäisch — außer im Englischen, das mit 'native language' eine Alternative ohne Familienmetapher lexikalisiert hat.",g:"baja"}
+    ],
+    n:"'Muttersprache' zeigt, dass auch universell verbreitete Metaphern lexikografisch kommentiert werden müssen: Die Mutter-Metapher ist nahezu pan-europäisch, aber soziolinguistisch nicht unproblematisch. Das Wörterbuch muss den Wandel der Fachterminologie (L1, Erstsprache) dokumentieren."
+  }
+  ,"Haus":{art:"das",pl:"Häuser",s:"house.n.01",pos:"Substantiv",
+    def_en:"a building for human habitation — in German, distinct from Wohnung (apartment), Zuhause (emotional home) and Heim (institutional or emotional home)",
+    def_de:"Gebäude zum Wohnen; im Deutschen abzugrenzen von: Wohnung (Untereinheit), Zuhause (emotionaler Ort), Heim (Institution oder affektiver Ort), Gebäude (neutral, kein Wohnen)",
+    eq:{es:["casa — deckt sowohl Haus (Gebäude) als auch Zuhause (emotionaler Ort) ab, wie FR/IT/PT"],en:["house (Gebäude, physisch) — ABER: EN unterscheidet strikt 'house' (Gebäude) von 'home' (emotionaler Ort), wie DE"],fr:["maison — deckt Haus + emotionalen Heimbereich ab (weniger Trennung als DE/EN)"],pt:["casa — wie ES: deckt Gebäude + emotionalen Ort ab"],it:["casa — wie ES/PT: keine klare Trennung Gebäude/emotionaler Ort"]},
+    ej:["Sie wohnt in einem großen Haus auf dem Land.","Das Haus meiner Großmutter steht noch — aber es ist nicht mehr mein Zuhause.","Ich bin zu Hause (= in meiner Wohnung/meinem Zuhause)."],
+    hi:["Gebäude","Wohnraum"],ho:["Einfamilienhaus","Reihenhaus","Mehrfamilienhaus","Hochhaus","Ferienhaus"],
+    probs:[
+      {t:"equivalente_parcial",l:["es","fr","pt","it"],d:"DE 'Haus' (physisches Gebäude) und 'Zuhause' (emotionaler Ort) sind lexikalisch getrennt — wie im Englischen (house/home). Aber ES 'casa', FR 'maison', PT 'casa', IT 'casa' decken BEIDE Konzepte mit einem einzigen Wort ab. DE und EN lexikalisieren diese Unterscheidung; die romanischen Sprachen nicht.",g:"alta"},
+      {t:"equivalente_parcial",l:["en"],d:"EN teilt die DE-Unterscheidung (house/home = Haus/Zuhause) vollständig. Aber: 'house music', 'full house', 'house of representatives' zeigen, dass EN 'house' eine weitere Polysemie hat als DE 'Haus' in vergleichbaren Kollokationen.",g:"baja"},
+      {t:"registro",l:["de"],d:"'Heim' (DE) kann sowohl 'Zuhause' (affektiv: Mein Heim ist dort) als auch 'Institution' (Altenheim, Waisenheim) bedeuten. Diese Polysemie fehlt in EN 'home' (nur affektiv) und ES 'hogar' (nur affektiv). Lexikografisch wichtige Differenzierung.",g:"media"}
+    ],
+    n:"'Haus/Zuhause/Heim' ist ein klassisches Beispiel für unterschiedliche Lexikalisierungsgrenzen: DE und EN ziehen dieselbe Grenze (Gebäude/emotionaler Ort), während die romanischen Sprachen beide Konzepte unter einem Wort bündeln."
+  }
+  ,"Arzt":{art:"der",pl:"Ärzte / Ärztinnen",s:"physician.n.01",pos:"Substantiv",
+    def_en:"a qualified medical practitioner; in German distinct from 'Doktor' (academic title) — in everyday EN and other languages, 'doctor/docteur/dottore' is used for both",
+    def_de:"Medizinisch ausgebildete Person mit Approbation; im Deutschen klar unterschieden vom akademischen Titel 'Doktor' — man kann Arzt ohne Doktortitel sein und Doktor ohne Arzt zu sein",
+    eq:{es:["médico/a (Beruf) — 'doctor/a' wird umgangssprachlich auch für den Arzt verwendet, obwohl es eigentlich der Doktortitel ist"],en:["doctor (umgangssprachlich, für Arzt) / physician (formal, BrE/AmE medizinisch) / GP (general practitioner = Hausarzt)"],fr:["médecin (Beruf, formal) / docteur (Anrede, umgangssprachlich auch als Beruf verwendet)"],pt:["médico/a (Beruf) / doutor/doutora (Anrede, Titel)"],it:["medico (Beruf) / dottore/dottoressa (Anrede — in IT für JEDEN Hochschulabsolventen üblich!)"],"ar":["طبيب (ṭabīb) — دكتور كلقب أكاديمي: دكتوراه"],"ru":["врач (vrač) — профессия; доктор (dóktor) — разг. + учёная степень"]},
+    ej:["Er ist Arzt, aber kein Doktor — er hat keine Dissertation geschrieben.","Sie ist Doktor der Philosophie, aber keine Ärztin.","Ich gehe morgen zum Arzt."],
+    hi:["Mediziner","Heilberuf"],ho:["Hausarzt","Facharzt","Chirurg","Kinderarzt","Zahnarzt"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"DE 'Doktor' als akademischer Titel (Dr. phil., Dr. ing.) ≠ EN 'doctor' als Arztbezeichnung. Im Englischen heißt ein Mediziner fast immer 'doctor', unabhängig vom Doktortitel. 'Physician' ist die formelle Entsprechung. 'Arzt' und EN 'doctor' decken sich im Alltag, aber nicht in der Titelführung.",g:"alta"},
+      {t:"connotacion",l:["it"],d:"In Italien ist 'dottore/dottoressa' die übliche Anrede für JEDEN Hochschulabsolventen (auch Ingenieure, Juristen, Ökonomen). Es ist kein spezifischer Titel für Ärzte. Diese Ausweitung des Doktor-Titels auf alle Graduierten ist für DE-IT-Übersetzungen in formellen Kontexten hochrelevant.",g:"alta"},
+      {t:"registro",l:["de"],d:"Im deutschen Alltag sagt man 'Ich gehe zum Arzt' (neutral) oder 'zum Doktor' (umgangssprachlich, obwohl Doktor eigentlich der Titel ist). Diese umgangssprachliche Verwendung von 'Doktor' für den Arzt ist im Wörterbuch zu markieren.",g:"media"}
+    ],
+    n:"'Arzt' illustriert das komplexe Verhältnis von Berufsbezeichnung und akademischem Titel, das in jeder Sprache anders gelöst wird. Besonders instruktiv: der Vergleich DE/IT zeigt, wie der Doktortitel in beiden Ländern kulturell verschiedene Reichweiten hat."
+  }
+  ,"Kopf":{art:"der",pl:"Köpfe",s:"head.n.01",pos:"Substantiv",
+    def_en:"(1) the body part above the neck; (2) mind/intellect ('ich habe keinen Kopf dafür'); (3) person counted ('pro Kopf'); (4) leader ('der Kopf der Organisation'); (5) top/front ('Kopf des Briefes')",
+    def_de:"(1) Körperteil; (2) Verstand/Intellekt; (3) Person (Zähleinheit); (4) Anführer; (5) oberer Teil von Briefen, Seiten etc.",
+    eq:{es:["cabeza — (1-4: alle Bedeutungen) / por cabeza (pro Kopf)"],en:["head — sehr kongruent mit DE: head of the organization, per head, use your head, letterhead"],fr:["tête — très congruent: tête de l'organisation, par tête, tête de lettre"],pt:["cabeça — kongruent mit DE: por cabeça, cabeça da organização"],it:["testa / capo — interessant: IT hat zwei Wörter! testa (Körperteil) vs capo (Anführer/Vorgesetzter)"]},
+    ej:["Er hat einen dicken Kopf (= Kopfschmerzen / oder: ist stur).","Sie ist der Kopf der Organisation.","Das Einkommen pro Kopf ist gestiegen.","Den Kopf verlieren (= die Beherrschung verlieren)."],
+    hi:["Körperteil","Führungsperson"],ho:["Hinterkopf","Stirn","Scheitel","Briefkopf"],
+    probs:[
+      {t:"equivalente_parcial",l:["it"],d:"IT unterscheidet 'testa' (anatomischer Kopf, Verstand: 'usare la testa') von 'capo' (Anführer, Vorgesetzter, Chef). DE 'Kopf' und EN 'head' decken BEIDE Bedeutungen ab. IT spaltet auf, was DE/EN/FR/ES bündeln — ein Fall von lexikalischer Differenzierung.",g:"alta"},
+      {t:"connotacion",l:["de"],d:"'Einen dicken Kopf haben' (DE) = (1) Kopfschmerzen haben ODER (2) stur/eigensinnig sein. Diese Doppelbedeutung existiert in EN nicht: 'a thick head' = dumm (!) — völlig andere Konnotation. Phraseologische Äquivalenz ist hier nicht gegeben.",g:"alta"},
+      {t:"connotacion",l:["en"],d:"'Head' in EN hat stärkere institutionelle Verwendung als DE 'Kopf': 'head of state', 'head teacher', 'head of department'. DE bevorzugt hier 'Leiter', 'Chef', 'Vorstand'. DE 'Kopf' wird figurativer/metaphorischer verwendet als das institutionell-formelle EN 'head'.",g:"media"}
+    ],
+    n:"'Kopf' zeigt die Stärken und Grenzen scheinbarer Kongruenz: DE/EN/FR/ES sind hochgradig kongruent, aber die phraseologischen und institutionellen Verteilungen unterscheiden sich. IT bricht aus dem Muster aus, indem es zwei Wörter für die verschiedenen Bedeutungen hat."
+  }
+  ,"Frieden":{art:"der",pl:"Friedensschlüsse / (kein Pl. im allg. Sinn)",s:"peace.n.01",pos:"Substantiv",
+    def_en:"(1) a state of harmony and absence of conflict between people, groups or nations; (2) inner tranquility; (3) silence/calm (Ruhe und Frieden)",
+    def_de:"(1) Abwesenheit von Krieg oder Konflikt; (2) innere Ruhe; (3) Stille (Ruhe und Frieden); Kompositum: Friedensvertrag, Friedensprozess, Friedensnobelpreis",
+    eq:{es:["paz — sehr kongruent: paz interior, proceso de paz, Premio Nobel de la Paz"],en:["peace — sehr kongruent: peace of mind, peace process, peace treaty"],fr:["paix — sehr kongruent"],pt:["paz — sehr kongruent"],it:["pace — sehr kongruent"],ar:["سلام (salām) — auch: مرحبا als Grußformel / السلام عليكم (islamischer Gruß)"],ru:["мир (mir) — ACHTUNG: Homonim! мир 1 = Frieden / мир 2 = Welt/Universum ★"]},
+    ej:["Der Frieden zwischen den Ländern hält seit 70 Jahren.","Ich brauche Ruhe und Frieden zum Arbeiten.","Nach dem Friedensvertrag kehrte die Normalität zurück."],
+    hi:["Zustand","Harmonie"],ho:["Waffenstillstand","Friedensvertrag","innerer Friede"],
+    probs:[
+      {t:"polisemia",l:["ru"],d:"Russisch 'мир' ist ein klassisches Homonim: мир₁ = Frieden (DE 'Frieden') / мир₂ = Welt, Universum (DE 'Welt'). Tolstois Romantitel 'Война и мир' wird deshalb unterschiedlich übersetzt: 'Krieg und Frieden' ODER 'Krieg und Welt' — beide sind philologisch vertretbar.",g:"alta"},
+      {t:"connotacion",l:["ar"],d:"Arabisch 'سلام' (salām) trägt neben der Bedeutung 'Frieden' auch die des islamischen Grußes (السلام عليكم). Im politischen Kontext (Nahostfrieden) ist das Wort hochgradig aufgeladen.",g:"media"}
+    ],
+    n:"'Frieden' gehört zu den universellen Konzepten mit hoher Äquivalenz — aber gerade die russische Homonymie мир₁/мир₂ macht es zu einem Musterbeispiel für Übersetzungsprobleme in der Literatur und der politischen Sprache."
+  }
+  ,"Schulden":{art:"die",pl:"Schulden (Pluralwort im Sinne von Verbindlichkeiten)",s:"debt.n.01",pos:"Substantiv",
+    def_en:"money or something owed to another person or institution; plural of Schuld — note: German 'Schuld' covers BOTH 'debt' AND 'guilt/fault'",
+    def_de:"Finanzielle Verbindlichkeiten (Pl. von Schuld). Wichtig: DE 'Schuld' (Singular) = (1) Schulden (finanzielle Schuld) UND (2) Schuld/Schuldgefühl (moralische Schuld). Englisch trennt strikt.",
+    eq:{es:["deudas (Pl.) — de deuda (financiell) / culpa (moralisch) — zwei getrennte Wörter"],en:["debts (Pl.) — von debt (finanziell) / guilt, fault (moralisch) — ZWEI GETRENNTE WÖRTER"],fr:["dettes (Pl.) — de dette (finanziell) / culpabilité, faute (moralisch) — zwei Wörter"],pt:["dívidas (Pl.) — finanziell / culpa (moralisch) — zwei Wörter"],it:["debiti (Pl.) — finanziell / colpa (moralisch) — zwei Wörter"],ar:["ديون (duyūn, Pl.) — finanziell / ذنب (ḏanb) oder إثم (iṯm) — moralisch"],ru:["долги (dolgí, Pl.) — finanziell / вина (viná) — moralisch — zwei Wörter wie EN/FR"]},
+    ej:["Er hat hohe Schulden bei der Bank.","Er trägt keine Schuld an dem Unfall. (Schuld hier = moralisch)","Schuld und Sühne — der Titel des Dostojewski-Romans."],
+    hi:["Verbindlichkeit","Verpflichtung"],ho:["Staatsschulden","Schuldenabbau"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"DE 'Schuld' (Singular) lexikalisiert BEIDE Konzepte: finanziell (Schulden haben) und moralisch (Schuld tragen). Alle Zielsprachen trennen diese Bedeutungen in zwei verschiedene Wörter. Die Kompositabildung 'Schuldbewusstsein', 'Unschuld', 'verschuldet' aktiviert jeweils verschiedene Bedeutungsstränge.",g:"alta"},
+      {t:"connotacion",l:["de"],d:"'Schuld und Sühne' (Dostojewskis Roman, 'Prestuplenie i nakazanie' = 'Verbrechen und Strafe') zeigt, wie der DE Titel die moralische Komponente betont, die im russischen Original nicht 'Schuld', sondern 'Verbrechen' heißt.",g:"media"}
+    ],
+    n:"'Schulden/Schuld' ist ein Paradefall für kontrastive Polysemie: DE 'Schuld' bündelt finanzielles und moralisches Konzept in einem Wort. Ein idealer Einstieg in die Diskussion über kulturell geprägte Semantik."
+  }
+  ,"Stunde":{art:"die",pl:"Stunden",s:"hour.n.01",pos:"Substantiv",
+    def_en:"(1) a period of 60 minutes; (2) IN GERMAN ONLY: a lesson/class period (Schulstunde, Unterrichtsstunde) — this second meaning does not exist in most target languages",
+    def_de:"(1) 60 Minuten (Zeitmaß); (2) Schulstunde / Unterrichtsstunde (= eine Unterrichtseinheit, unabhängig von der tatsächlichen Dauer); (3) die Stunde (feierlich: 'die Stunde der Wahrheit')",
+    eq:{es:["hora (Bed. 1) / clase (Bed. 2: Schulstunde) — zwei Wörter"],en:["hour (Bed. 1) / lesson, class (Bed. 2) — zwei Wörter"],fr:["heure (Bed. 1) / cours, leçon (Bed. 2) — zwei Wörter"],pt:["hora (Bed. 1) / aula (Bed. 2) — zwei Wörter"],it:["ora (Bed. 1) / lezione, ora (Bed. 2: 'ora di matematica') — ora deckt beide!"],ar:["ساعة (sā'a) — Bed. 1 / حصة (ḥiṣṣa) — Schulstunde Bed. 2"],ru:["час (čas) — Bed. 1 / урок (urók) — Schulstunde Bed. 2"]},
+    ej:["In einer Stunde bin ich fertig.","Ich habe heute drei Stunden Deutsch. (= drei Unterrichtsstunden)","Die Stunde der Entscheidung ist gekommen."],
+    hi:["Zeitmaß","Einheit"],ho:["Schulstunde","Unterrichtsstunde","Doppelstunde"],
+    probs:[
+      {t:"polisemia",l:["de"],d:"DE 'Stunde' bedeutet im Schulkontext 'Unterrichtsstunde' (45 Minuten in DE), nicht notwendigerweise 60 Minuten. Diese Kontextbedeutung ist in keiner anderen Sprache in derselben Form lexikalisiert: ES 'hora' = immer 60 min; 'clase' = Unterrichtseinheit.",g:"alta"},
+      {t:"equivalente_parcial",l:["it"],d:"IT 'ora' deckt überraschenderweise BEIDE Bedeutungen ab: 'un'ora' (60 min) UND 'ora di matematica' (Unterrichtsstunde). Das ist die einzige romanische Sprache mit dieser Polysemie — näher am Deutschen als ES/FR/PT.",g:"media"}
+    ],
+    n:"'Stunde' zeigt, wie ein alltägliches Zeitmaßwort durch institutionellen Gebrauch (Schule) eine zweite Bedeutung entwickelt. Für Übersetzungen in Bildungskontext immer kritisch prüfen."
+  }
+  ,"Flucht":{art:"die",pl:"Fluchten",s:"escape.n.01",pos:"Substantiv",
+    def_en:"(1) escape from danger, persecution or captivity; (2) a suite of rooms (Zimmerflucht: architectural term); (3) in compounds: Flucht nach vorne, Fluchtweg",
+    def_de:"(1) das Fliehen aus Gefahr oder Verfolgung; (2) Zimmerflucht (Architektur: Reihe von Zimmern); direkt verbunden mit 'Flüchtling' (Person) und 'fliehen' (Verb)",
+    eq:{es:["huida / fuga — huida (von Verfolgung), fuga (schnell/dramatisch) — beide partiell"],en:["flight (formell) / escape (allgemein) — flight auch: Flug! Doppelbedeutung"],fr:["fuite — auch: fuite de gaz (Gasleck), fuite des cerveaux (brain drain)"],pt:["fuga / evasão"],it:["fuga — auch: fuga musicale (Fuge in der Musik) / fuga di notizie (Datenleck)"],ar:["فرار (firār) — Flucht / هروب (hurūb) — Entkommen"],ru:["побег (pobég) — Flucht/Entkommen / бегство (bégstvo) — formeller"]},
+    ej:["Die Flucht der Flüchtlinge dauerte drei Wochen.","Er organisierte seine Flucht aus dem Gefängnis.","Zimmerflucht im Schloss (architektonisch)."],
+    hi:["Bewegung","Handlung"],ho:["Massenflucht","Fluchtweg","Fluchtreflex"],
+    probs:[
+      {t:"falso_cognado",l:["en"],d:"EN 'flight' = (1) DE 'Flucht' (escape) UND (2) DE 'Flug' (Flugzeug/Reise). Diese Homonymie existiert nicht im Deutschen: 'flight risk' ≠ Fluggast. Im übertragenen Sinn: 'flight of fancy' = Gedankenflug, nicht Gedankenflucht.",g:"media"},
+      {t:"polisemia",l:["fr","it"],d:"FR 'fuite' und IT 'fuga' bedeuten neben 'Flucht' auch 'Leck' (Gasleck, Datenleck). DE 'Flucht' hat diese technische Bedeutung nicht. IT 'fuga' außerdem = musikalische Fuge.",g:"media"}
+    ],
+    n:"'Flucht' ist im Wortfeldverbund mit 'Flüchtling' und 'fliehen' zu sehen. Die Kategorie Situationen Dynamisch > Bewegung zeigt, wie Handlungskonzepte — anders als Objektkonzepte — stärker kulturell und kontextuell differenzieren."
+  }
+  ,"Gespräch":{art:"das",pl:"Gespräche",s:"conversation.n.01",pos:"Substantiv",
+    def_en:"an informal or formal spoken exchange between two or more people; German has a richer system for distinguishing types of conversation than most target languages",
+    def_de:"Mündlicher Austausch; DE unterscheidet feiner als die Zielsprachen: Gespräch (allgemein/neutral), Unterhaltung (angenehm/leicht), Diskussion (argumentativ), Verhandlung (formal), Plauderei (zwanglos)",
+    eq:{es:["conversación (allgemein) / diálogo (mehr strukturiert) / charla (informell)"],en:["conversation (allgemein) / talk / chat (informell) / discussion (argumentativ)"],fr:["conversation / entretien (formell/professionell) / discussion"],pt:["conversa / diálogo / bate-papo (informell)"],it:["conversazione / colloquio (formell) / chiacchierata (informell)"],ar:["محادثة (muḥādaṯa) — allgemein / حوار (ḥiwār) — Dialog/formell"],ru:["разговор (razgovór) — allgemein / беседа (besédа) — eher formell/geplant"]},
+    ej:["Wir müssen ein ernstes Gespräch führen.","Das war ein nettes Gespräch beim Kaffee.","Die Gespräche zwischen den Parteien scheiterten."],
+    hi:["Kommunikation","Austausch"],ho:["Streitgespräch","Verkaufsgespräch","Tischgespräch","Zwiegespräch"],
+    probs:[
+      {t:"equivalente_parcial",l:["es","en"],d:"ES 'conversación' und EN 'conversation' sind neutraler und breiter als DE 'Gespräch'. Das Deutsche hat ein differenzierteres System: 'Unterhaltung' (leicht/angenehm), 'Diskussion' (argumentativ), 'Verhandlung' (formal-juridisch). In der Übersetzung muss die Nuance explizit gemacht werden.",g:"media"},
+      {t:"equivalente_parcial",l:["fr"],d:"FR 'entretien' (wörtlich: 'Unterhaltung', aber eher formell-professionell: Vorstellungsgespräch = entretien d'embauche) deckt nicht dasselbe Register wie DE 'Gespräch' ab. 'Conversation' ist der neutrale Alltagsbegriff.",g:"baja"}
+    ],
+    n:"'Gespräch' illustriert, wie das Deutsche kommunikative Akte feiner lexikalisiert als andere Sprachen. Diese Differenzierung ist für den DaF-Bereich und für Übersetzungen in professionellen Kontexten (Bewerbung, Verhandlung) hochrelevant."
+  }
+  ,"Orange":{art:"die",pl:"Orangen",s:"orange.n.01",pos:"Substantiv",
+    def_en:"the round citrus fruit with orange skin and sweet-sour juice; in German has two competing forms with strong regional distribution",
+    def_de:"Zitrusfrucht; im Deutschen zwei konkurrierende Formen: 'Orange' (Süddeutschland, Österreich, Schweiz, Standard) und 'Apfelsine' (Norddeutschland, wörtlich: 'Apfel aus China/Sina')",
+    eq:{es:["naranja — von arabisch نارنج (nāranǧ) ★ — arabische Lehnwort-Kette"],en:["orange — von arabisch نارنج über persisch nārang — farb- und fruchtbezeichnend"],fr:["orange — selbe Etymologie wie EN/DE 'Orange'"],pt:["laranja — direkt vom Arabischen"],it:["arancia — selbe arabische Wurzel"],ar:["برتقال (burtuqāl) — wörtlich: 'Portugal'! Die Orange kam via Portugal nach arabischsprachige Welt ★"],ru:["апельсин (apel'sín) — von niederländ. appelsien = Apfelsine, wie DE Nord! ★"]},
+    ej:["Ich esse gern Orangen zum Frühstück.","Im Norden sagt man Apfelsine, im Süden Orange.","Die Farbe Orange hat denselben Namen wie die Frucht."],
+    hi:["Zitrusfrucht","Obst"],ho:["Blutorange","Navelorange","Clementine"],
+    probs:[
+      {t:"variacion_dialectal",l:["de"],d:"Die Konkurrenz Orange / Apfelsine ist ein Musterbeispiel für norddeutsch / süddeutsch-österreichische Lexemvariation. 'Apfelsine' enthält die Etymologie ('Apfel aus China/Sina') transparent; 'Orange' stammt über FR aus dem Arabischen. Beide Formen sind standardsprachlich korrekt.",g:"alta"},
+      {t:"connotacion",l:["ar"],d:"Arabisch 'برتقال' (burtuqāl) bedeutet wörtlich 'Portugal' — die Orange kam im 15. Jh. über portugiesische Händler in die arabischsprachige Welt. Ein faszinierendes Beispiel für die Kodierung von Handelsgeschichte im Wortschatz.",g:"media"},
+      {t:"connotacion",l:["ru"],d:"Russisch 'апельсин' (apel'sín) ist eine Entlehnung aus dem Niederländischen 'appelsien' — und damit etymologisch identisch mit dem norddeutschen 'Apfelsine'. Russland und Norddeutschland teilen denselben Etymologiepfad.",g:"baja"}
+    ],
+    n:"'Orange/Apfelsine' ist ein ideales Lehrstück für Etymologie, Entlehnungswege und Dialektvariation in einem Wort. Arabisch 'burtuqāl' (Portugal) und russisch 'apel'sín' (Apfelsine) zeigen, wie Handelsgeschichte im Lexikon verewigt ist."
+  }
+  ,"Bibliothek":{art:"die",pl:"Bibliotheken",s:"library.n.01",pos:"Substantiv",
+    def_en:"a building or room containing collections of books, periodicals, and other materials for use or borrowing; also: a software code library",
+    def_de:"(1) Sammlung von Büchern und Medien, zugänglich für Leserinnen; (2) Informatik: Programmbibliothek (Code-Sammlung); aus griech. bibliothḗkē (biblio = Buch + thḗkē = Behältnis)",
+    eq:{es:["biblioteca — ACHTUNG: 'librería' = Buchladen (NICHT Bibliothek) ★"],en:["library — ACHTUNG: 'librairie' (FR) = Buchladen ≠ EN 'library' (Bibliothek) ★"],fr:["bibliothèque — 'librairie' (FR) = Buchladen ★"],pt:["biblioteca"],it:["biblioteca / libreria (kann beides bedeuten: Bibliothek + Buchregal)"],ar:["مكتبة (maktaba) — bedeutet SOWOHL Bibliothek ALS AUCH Buchhandlung ★"],ru:["библиотека (bibliotéka) — nur Bibliothek; книжный магазин = Buchhandlung"]},
+    ej:["Ich gehe in die Bibliothek, um für die Prüfung zu lernen.","Die Bibliothek schließt um 20 Uhr.","Eine Programmbibliothek enthält wiederverwendbaren Code."],
+    hi:["Einrichtung","Informationsressource"],ho:["Stadtbibliothek","Universitätsbibliothek","Nationalbibliothek","Programmbibliothek"],
+    probs:[
+      {t:"falso_cognado",l:["fr","es"],d:"KLASSISCHER FALSCHER FREUND: FR 'librairie' = Buchhandlung (NICHT Bibliothek!). ES 'librería' = ebenfalls Buchhandlung. 'Bibliothek' = FR 'bibliothèque' / ES 'biblioteca'. Einer der häufigsten Fehler bei Deutschlernenden mit FR oder ES als Muttersprache.",g:"alta"},
+      {t:"polisemia",l:["ar"],d:"Arabisch 'مكتبة' (maktaba) bedeutet SOWOHL Bibliothek ALS AUCH Buchhandlung — eine produktive Polysemie, die in allen europäischen Sprachen aufgetrennt ist. Nur der Kontext klärt die Bedeutung.",g:"alta"},
+      {t:"equivalente_parcial",l:["it"],d:"IT 'libreria' kann je nach Kontext Bücherei/Bibliothek (selten, veraltet), Buchhandlung ODER Bücherregal bedeuten. 'Biblioteca' ist der sichere Äquivalentterm für DE 'Bibliothek'.",g:"media"}
+    ],
+    n:"'Bibliothek' ist einer der lehrreichsten Falschen Freunde für deutschsprachige Lernende romanischer Sprachen und umgekehrt. Das arabische 'maktaba' zeigt, dass die Zusammenlegung beider Konzepte auch außereuropäisch vorkommt."
+  }
+  ,"Metropole":{art:"die",pl:"Metropolen",s:"metropolis.n.01",pos:"Substantiv",
+    def_en:"a large, important city, often the main city of a country or region; in German also: a city of great cultural/economic significance",
+    def_de:"Großstadt mit überregionaler Bedeutung; im Deutschen oft mit positiver Konnotation (Weltmetropole); Gegensatz: Provinz (abwertend)",
+    eq:{es:["metrópoli / metrópolis — aus griech. mētropolis (mētro = Mutter + polis = Stadt)"],en:["metropolis (formell) / major city / hub — 'metropolis' klingt formeller als DE 'Metropole'"],fr:["métropole — ACHTUNG: in FR auch: Mutterland / Kontinentalfrankreich (vs. Überseegebiete) ★"],pt:["metrópole — wie FR: auch Mutterland (Portugal ggü. ehemaligen Kolonien) ★"],it:["metropoli — neutral, wie DE"],ar:["عاصمة (ʿāṣima) — eher Hauptstadt / مدينة كبرى (madīna kubrā) — Großstadt"],ru:["метрополия (metropólija) — eher Mutterland (kolonial) / мегаполис (megápolis) — Megastadt"]},
+    ej:["Berlin ist eine europäische Metropole.","Die Metropolen des Nordens boomen wirtschaftlich.","Paris — Metropole der Kultur und Mode."],
+    hi:["Stadt","Siedlung"],ho:["Weltmetropole","Metropolregion","Ballungsraum"],
+    probs:[
+      {t:"equivalente_parcial",l:["fr","pt"],d:"FR 'métropole' und PT 'metrópole' haben eine kolonialhistorische Bedeutung: das Mutterland im Gegensatz zu den Überseegebieten/Kolonien. Diese Bedeutung fehlt im deutschen 'Metropole' völlig. In FR Zeitungen bezeichnet 'la Métropole' oft das kontinentale Frankreich.",g:"alta"},
+      {t:"equivalente_parcial",l:["ru"],d:"Russisch 'метрополия' (metropólija) hat primär die Bedeutung 'Mutterland/Kolonialmacht', nicht Großstadt. Für die Bedeutung 'Großstadt' verwendet das Russische 'мегаполис' (megapolis) oder 'крупный город'.",g:"media"}
+    ],
+    n:"'Metropole' zeigt, wie ein griechisches Lehnwort in verschiedenen Sprachen divergente Bedeutungen entwickelt hat: während DE/IT neutral 'große Stadt' meinen, codieren FR/PT/RU die kolonialhistorische Beziehung Mutterland/Peripherie."
+  }
+  ,"Celsius":{art:"—",pl:"—",s:"celsius.n.01",pos:"Eigenname / Maßeinheit",
+    def_en:"the temperature scale where 0°C = freezing point of water and 100°C = boiling point; named after Swedish astronomer Anders Celsius (1701–1744); used in most of the world",
+    def_de:"Temperaturskala, benannt nach dem schwedischen Astronomen Anders Celsius; in Deutschland, Österreich und der Schweiz ausschließlich verwendet; internationaler SI-Standard",
+    eq:{es:["Celsius (grados Celsius) / centígrado (alternative DE-Bezeichnung: veraltet)"],en:["Celsius (scientific/international) / Centigrade (BrE, informal) — ACHTUNG: USA verwendet Fahrenheit!"],fr:["Celsius / degrés Celsius — wie DE, Standard in FR"],pt:["Celsius / graus Celsius"],it:["Celsius / gradi Celsius"],ar:["درجة مئوية (daraja mi'awiyya) — 'Hundertgrad-Skala'; Celsius gilt als Fremdwort"],ru:["градус Цельсия (grádus Cél'sija) — Standard in Russland; Fahrenheit unbekannt"]},
+    ej:["Es sind 37°C — das ist Fieber!","In den USA sagt man 98.6°F statt 37°C.","Das Wasser kocht bei 100°C (auf Meereshöhe)."],
+    hi:["Maßeinheit","Temperatur"],ho:["Fahrenheit","Kelvin","Réaumur"],
+    probs:[
+      {t:"variacion_dialectal",l:["en"],d:"USA verwendet ausschließlich Fahrenheit (°F), während alle anderen englischsprachigen Länder und die Wissenschaft Celsius verwenden. Für DE↔EN-Übersetzungen in amerikanischen Kontexten ist Umrechnung oft nötig: °F = (°C × 9/5) + 32.",g:"alta"},
+      {t:"connotacion",l:["ar"],d:"Im Arabischen ist 'درجة مئوية' (daraja mi'awiyya = Hundertgraddegree) die deskriptive Bezeichnung, die die Skalaeigenschaft transparent macht — ähnlich wie die veraltete deutsche Bezeichnung 'Grad Celsius' als Eigenname vs. 'Grad' als allgemeiner Begriff.",g:"baja"}
+    ],
+    n:"'Celsius' als Maßeinheit zeigt, dass auch in der scheinbar internationalen Wissenschaftssprache kulturelle Divergenzen bestehen: Die USA sind weltweiter Ausreißer mit Fahrenheit. Für den Bereich Einheiten/Maße ist dies ein wichtiges Übersetzungsproblem in Alltag, Medizin und Technik."
+  }
+};
+
+const TLANGS=[{c:"es",n:"Español"},{c:"en",n:"English"},{c:"fr",n:"Français"},{c:"pt",n:"Português"},{c:"it",n:"Italiano"},{c:"ar",n:"العربية",rtl:true},{c:"ru",n:"Русский"}];
+const TIPOLABEL={registro:"Registerunterschied",falso_cognado:"Falscher Freund",laguna_lexica:"Lexikalische Lücke",equivalente_parcial:"Partielle Äquivalenz",polisemia:"Polysemie",variacion_dialectal:"Dialektale Variation",connotacion:"Konnotationsunterschied",generisches_maskulinum:"Generisches Maskulinum"};
+const ISSUETYPES=Object.values(TIPOLABEL);
+const TIPODESC={
+  "Registerunterschied":"Das Wort existiert in der Zielsprache, hat aber einen anderen stilistischen Wert (formell/umgangssprachlich, neutral/abwertend/aufgeladen). Beispiel: DE 'Flüchtling' vs. 'Geflüchtete'.",
+  "Falscher Freund":"Form ähnlich, Bedeutung verschieden. Häufigste und gefährlichste Übersetzungsfalle. Beispiel: DE 'Gymnasium' ≠ EN 'gymnasium' (Sporthalle).",
+  "Lexikalische Lücke":"Kein Einwortäquivalent in der Zielsprache. Das Konzept ist dort nicht lexikalisiert und muss umschrieben werden. Beispiel: DE 'Schadenfreude' im Spanischen.",
+  "Partielle Äquivalenz":"Ein Äquivalent existiert, deckt aber nur einen Teil des deutschen Bedeutungsspektrums ab oder hat engere/weitere Grenzen. Beispiel: EN 'shellfish' enger als DE 'Meeresfrüchte'.",
+  "Polysemie":"Das deutsche Wort hat mehrere Bedeutungen, die in der Zielsprache durch verschiedene Wörter ausgedrückt werden — oder umgekehrt. Beispiel: DE 'Zug' (Bahn / Luftzug / Schachzug…).",
+  "Dialektale Variation":"Das Äquivalent variiert je nach Region oder Varietät der Zielsprache. Beispiel: EN 'flat' (BrE) vs. 'apartment' (AmE) für DE 'Wohnung'.",
+  "Konnotationsunterschied":"Gleiche Denotation, aber unterschiedliche affektive oder kulturelle Färbung. Beispiel: EN 'socialist' in USA vs. Europa — dasselbe Wort, entgegengesetzte Wertung.",
+  "Generisches Maskulinum":"Die maskuline Form wird im Deutschen als geschlechtsneutral verwendet. In Zielsprachen ist dieses Problem unterschiedlich gelöst (EN: geschlechtsneutrales 'refugee'; FR: 'réfugié/réfugiée')."
+};
+const STORE_KEY="lexieval_de_v3";
+
+function loadResults(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||"[]");}catch(e){return[];}}
+function saveResult(entry){const arr=loadResults();arr.push(entry);localStorage.setItem(STORE_KEY,JSON.stringify(arr));}
+function clearResults(){localStorage.removeItem(STORE_KEY);}
+
+function exportJSON(data){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="lexieval_resultados.json";a.click();URL.revokeObjectURL(url);
+}
+function exportCSV(data){
+  const langs=["es","en","fr","pt","it"];
+  const header=["Zeitstempel","Student","Wort","Punkte","AktiveSprachen","DefBewertung","EjBewertung","ErkannteProbleme","FreierKommentar",...langs.map(l=>"Rating_"+l),...langs.map(l=>"Komm_"+l),"NichtErkannte","RichtigErkannte"];
+  const rows=data.map(r=>[r.ts,r.student||"",r.word,r.score,(r.activeLangs||langs).join("|"),r.ev._de?.r||"",r.ev._ej?.r||"",(r.ev._p||[]).join("|"),(r.ev._obs||"").replace(/\n/g," "),...langs.map(l=>r.ev[l]?.r||""),...langs.map(l=>(r.ev[l]?.c||"").replace(/\n/g," ")),(r.misses||[]).map(m=>TIPOLABEL[m.t]||m.t).join("|"),(r.hits||[]).map(m=>TIPOLABEL[m.prob?.t]||"").join("|")]);
+  const csv=[header,...rows].map(r=>r.map(c=>'"'+(String(c||"").replace(/"/g,'""'))+'"').join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="lexieval_resultados.csv";a.click();URL.revokeObjectURL(url);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useMemo}=React;
+const h=React.createElement;
+
+function computeFeedback(data,ev,activeLangs){
+  const probs=data.probs||[];
+  const aSet=new Set(activeLangs);
+  let score=0,maxS=0,hits=[],misses=[],fps=[];
+  probs.forEach(prob=>{
+    const wt=prob.g==="alta"?3:prob.g==="media"?2:1;
+    maxS+=wt;
+    const probLabel=TIPOLABEL[prob.t]||prob.t;
+    const fL=prob.l.some(l=>aSet.has(l)&&["dud","mal","gap"].includes(ev[l]?.r));
+    const fT=prob.l.some(l=>aSet.has(l)&&(ev[l]?.pts||[]).includes(probLabel));
+    if(fL||fT){score+=wt;hits.push({prob});}
+    else misses.push(prob);
+  });
+  const probLangs=new Set(probs.flatMap(p=>p.l));
+  activeLangs.forEach(l=>{
+    if(ev[l]?.r==="mal"&&!probLangs.has(l))fps.push(l);
+  });
+  return{score:maxS>0?Math.min(10,Math.round((score/maxS)*10)):10,hits,misses,fps};
+}
+
+function sCol(s){return s>=7?"#16a34a":s>=4?"#d97706":"#dc2626";}
+
+function LemmaSearch({onSelect,sel}){
+  const [q,setQ]=useState("");
+  const [initFilter,setInitFilter]=useState("");
+  const wdKeys=useMemo(()=>Object.keys(WD).sort((a,b)=>a.localeCompare(b,"de")),[]);
+  const allWords=useMemo(()=>{
+    const s=new Set(wdKeys);
+    ESMAS_DE.forEach(r=>r.wd.forEach(w=>s.add(w)));
+    return[...s].sort((a,b)=>a.localeCompare(b,"de"));
+  },[]);
+
+  // All initials that appear in allWords
+  const initials=useMemo(()=>{
+    const s=new Set(allWords.map(w=>w[0].toUpperCase()));
+    return["★",...[...s].sort((a,b)=>a.localeCompare(b,"de"))];
+  },[allWords]);
+
+  // Search results (when query active)
+  const results=useMemo(()=>{
+    if(!q.trim())return[];
+    const ql=q.toLowerCase();
+    return allWords.filter(w=>w.toLowerCase().includes(ql)).slice(0,20);
+  },[q,allWords]);
+
+  // Initial-filtered list (when no query)
+  const filtered=useMemo(()=>{
+    if(q.trim())return[];
+    if(!initFilter)return[];
+    if(initFilter==="★")return wdKeys;
+    return allWords.filter(w=>w[0].toUpperCase()===initFilter);
+  },[initFilter,allWords,wdKeys,q]);
+
+  const clearQ=()=>{setQ("");};
+  const handleInitial=i=>{setInitFilter(f=>f===i?"":i);setQ("");};
+
+  return h("div",null,
+    h("p",{className:"alabel"},"Lemmatasuche"),
+    h("input",{type:"search",className:"srch",placeholder:"Wort suchen…",value:q,
+      onChange:e=>{setQ(e.target.value);setInitFilter("");}}),
+    h("div",{style:{display:"flex",gap:"4px",flexWrap:"wrap",margin:"8px 0 4px"}},
+      initials.map(i=>h("button",{
+        key:i,
+        style:{padding:"3px 7px",fontSize:"11px",fontWeight:initFilter===i?"700":"400",
+          border:"1px solid "+(initFilter===i?"#111":"#ddd"),borderRadius:"5px",
+          background:i==="★"?(initFilter===i?"#2563eb":"#dbeafe"):(initFilter===i?"#111":"#fff"),
+          color:i==="★"?(initFilter===i?"#fff":"#2563eb"):(initFilter===i?"#fff":"#666"),
+          cursor:"pointer",fontFamily:"inherit",minWidth:"24px",textAlign:"center"},
+        onClick:()=>handleInitial(i)
+      },i))
+    ),
+    q.trim()?h("div",{className:"res-list"},
+      results.length===0
+        ?h("p",{className:"no-res"},"Keine Treffer für '"+q+"'")
+        :results.map(w=>{
+          const d=WD[w];const route=!d&&ESMAS_DE.find(r=>r.wd.includes(w));
+          return h("div",{key:w,className:"res-item"+(sel===w?" sel":""),onClick:()=>{onSelect(w);clearQ();}},
+            d&&d.art!=="—"&&h("span",{className:"ri-art"},d.art+" "),
+            h("span",{style:{fontWeight:500}},w),
+            d?h("span",{className:"ri-badge"},"★ Analyse")
+             :route&&h("span",{style:{fontSize:"11px",color:"#bbb"}},route.w+" › "+route.p.join(" › "))
+          );
+        })
+    ):filtered.length>0?h("div",{className:"res-list"},
+      filtered.map(w=>{
+        const d=WD[w];const route=!d&&ESMAS_DE.find(r=>r.wd.includes(w));
+        return h("div",{key:w,className:"res-item"+(sel===w?" sel":""),onClick:()=>onSelect(w)},
+          d&&d.art!=="—"&&h("span",{className:"ri-art"},d.art+" "),
+          h("span",{style:{fontWeight:500}},w),
+          d?h("span",{className:"ri-badge"},"★")
+           :route&&h("span",{style:{fontSize:"11px",color:"#bbb"}},route.p[route.p.length-1])
+        );
+      })
+    ):h("p",{style:{fontSize:"12px",color:"#bbb",marginTop:"4px",lineHeight:"1.6"}},
+      "Tippe ein Wort oder wähle einen Anfangsbuchstaben  ·  ★ = nur vollständige Analysen")
+  );
+}
+
+function ESMASBrowser({onSelect,sel}){
+  const allWorlds=useMemo(()=>[...new Set(ESMAS_DE.map(r=>r.w))],"");
+  const [world,setWorld]=useState("");
+  const [activeRoute,setActiveRoute]=useState(null);
+
+  const routes=useMemo(()=>world?ESMAS_DE.filter(r=>r.w===world):[],[world]);
+
+  const handleWorld=w=>{setWorld(w);setActiveRoute(null);};
+  const handleRoute=r=>{setActiveRoute(activeRoute===r?null:r);};
+
+  return h("div",null,
+    h("p",{className:"alabel"},"Konzeptuelles Wörterbuch"),
+    h("select",{
+      value:world,
+      onChange:e=>handleWorld(e.target.value),
+      style:{width:"100%",padding:"8px 10px",fontSize:"13px",border:"1px solid #ddd",
+        borderRadius:"8px",background:"#fff",color:world?"#111":"#888",
+        fontFamily:"inherit",marginBottom:"10px",cursor:"pointer"}
+    },
+      h("option",{value:""},"— Welt auswählen —"),
+      allWorlds.map(w=>h("option",{key:w,value:w},w))
+    ),
+    !world&&h("p",{style:{fontSize:"12px",color:"#bbb",lineHeight:"1.7"}},
+      "Wähle eine ontologische Welt, um die Konzeptkategorien zu erkunden."),
+    world&&routes.length===0&&h("p",{style:{fontSize:"12px",color:"#bbb"}},"Keine Einträge."),
+    routes.map((r,i)=>{
+      const isOpen=activeRoute===r;
+      return h("div",{key:i,style:{marginBottom:"3px"}},
+        h("button",{
+          style:{width:"100%",textAlign:"left",padding:"7px 10px",fontSize:"12px",
+            border:"1px solid "+(isOpen?"#111":"#e8e5de"),borderRadius:"7px",
+            background:isOpen?"#111":"#fff",color:isOpen?"#fff":"#555",
+            cursor:"pointer",fontFamily:"inherit",display:"flex",justifyContent:"space-between",
+            alignItems:"center",transition:"all .12s"},
+          onClick:()=>handleRoute(r)
+        },
+          h("span",null,
+            r.p.map((seg,j)=>h(React.Fragment,{key:j},
+              j>0&&h("span",{style:{margin:"0 5px",opacity:.35,fontSize:"9px"}},"›"),
+              h("span",null,seg)
+            ))
+          ),
+          h("span",{style:{opacity:.5,fontSize:"11px"}},isOpen?"▴":"▾")
+        ),
+        isOpen&&h("div",{style:{padding:"8px 10px 10px",border:"1px solid #e8e5de",borderTop:"none",
+          borderRadius:"0 0 7px 7px",background:"#fafaf8",marginTop:"-1px"}},
+          h("div",{className:"wrow"},
+            r.wd.map(w2=>h("button",{
+              key:w2,
+              className:"chip"+(sel===w2?" sel":"")+(WD[w2]?" has":""),
+              onClick:()=>onSelect(w2),
+              title:WD[w2]?"Analyse verfügbar":""
+            },w2,WD[w2]&&h("sup",{style:{fontSize:"8px",marginLeft:"2px"}},"★")))
+          )
+        )
+      );
+    })
+  );
+}
+
+function VerlaufPanel({onView,activeId,refresh}){
+  const [results,setResults]=useState(()=>loadResults());
+  useMemo(()=>setResults(loadResults()),[refresh]);
+  const del=(id,e)=>{e.stopPropagation();const arr=loadResults().filter(r=>r.id!==id);localStorage.setItem(STORE_KEY,JSON.stringify(arr));setResults(loadResults());};
+  if(!results.length)return h("div",null,h("p",{className:"alabel"},"Gespeicherte Auswertungen"),h("p",{style:{fontSize:"13px",color:"#bbb",lineHeight:"1.6",marginTop:"6px"}},"Noch keine Auswertungen. Analysiere ein Wort und klicke auf 'Auswertung speichern'."));
+  return h("div",null,
+    h("p",{className:"alabel"},"Gespeicherte Auswertungen ("+results.length+")"),
+    h("div",{className:"export-row"},
+      h("button",{className:"bx",onClick:()=>exportCSV(results)},"↓ CSV"),
+      h("button",{className:"bx",onClick:()=>exportJSON(results)},"↓ JSON"),
+      h("button",{className:"bs",style:{fontSize:"11px",padding:"5px 10px",color:"#dc2626",borderColor:"#fca5a5"},onClick:()=>{if(confirm("Alle Auswertungen löschen?")){clearResults();setResults([]);}}},"Alle löschen")
+    ),
+    results.slice().reverse().map(r=>h("div",{key:r.id,style:{position:"relative"},className:"vcard"+(activeId===r.id?" sel-v":""),onClick:()=>onView(r)},
+      h("div",{className:"vtop"},
+        h("span",{className:"vword"},(WD[r.word]?.art&&WD[r.word].art!=="—"?WD[r.word].art+" ":"")+r.word),
+        h("span",{className:"vscore",style:{color:sCol(r.score)}},r.score)
+      ),
+      h("div",{className:"vmeta"},
+        r.student&&h("span",{className:"vstudent"},r.student+" · "),
+        new Date(r.ts).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"}),
+        h("br",null),
+        h("span",{className:"vbadge "+(r.score>=7?"vb-ok":r.score>=4?"vb-warn":"vb-bad")},r.score>=7?"Gut":"Ausbaufähig"),
+        (r.activeLangs||[]).length&&h("span",{style:{fontSize:"10px",color:"#aaa"}},(r.activeLangs||[]).join("·"))
+      ),
+      h("button",{style:{position:"absolute",top:"8px",right:"8px",background:"none",border:"none",color:"#ccc",cursor:"pointer",fontSize:"14px",lineHeight:1},onClick:e=>del(r.id,e)},"×")
+    ))
+  );
+}
+
+function LangSelector({activeLangs,setActiveLangs}){
+  const toggle=c=>{
+    const next=activeLangs.includes(c)
+      ?(activeLangs.length>1?activeLangs.filter(x=>x!==c):activeLangs)
+      :[...activeLangs,c];
+    setActiveLangs(next);
+  };
+  return h("div",{className:"lang-sel-box"},
+    h("p",{className:"alabel",style:{margin:"0 0 5px"}},"Sprachen auswählen"),
+    h("p",{style:{fontSize:"11px",color:"#aaa",margin:"0 0 8px"}},"Aktive Sprachen (blau) werden bewertet. Anklicken zum Hinzufügen oder Entfernen."),
+    h("div",{className:"lang-toggle-row"},
+      TLANGS.map(l=>{
+        const isOn=activeLangs.includes(l.c);
+        return h("button",{
+          key:l.c,
+          className:"ltog"+(isOn?" on":""),
+          onClick:()=>toggle(l.c),
+          disabled:isOn&&activeLangs.length===1
+        },isOn?"✓ "+l.n:l.n);
+      })
+    )
+  );
+}
+
+function WordCard({word,data,onStartEval,onAllCorrect}){
+  return h("div",null,
+    h("div",{className:"card"},
+      h("div",{className:"word-hero"},
+        data.art!=="—"&&h("span",{className:"art"},data.art),
+        h("span",{className:"wbig"},word),
+        data.pl&&h("span",{className:"plural-info"},data.pl),
+        h("span",{className:"synset"},data.s),
+        h("span",{className:"pos-b"},data.pos)
+      ),
+      h("p",{className:"def-en"},data.def_en),
+      h("p",{className:"def-de"},data.def_de),
+      data.hi?.length>0&&h("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap",marginTop:"4px"}},
+        h("span",{style:{fontSize:"12px",color:"#bbb",marginRight:"4px"}},"↑"),
+        data.hi.map(x=>h("span",{key:x,className:"hpill"},x))
+      )
+    ),
+    h("div",{className:"card"},
+      h("p",{className:"sec"},"Mehrsprachige Äquivalente"),
+      TLANGS.map(l=>{
+        const lems=(data.eq||{})[l.c]||[];
+        return h("div",{className:"lang-row",key:l.c},
+          h("div",{className:"lcode"},l.c.toUpperCase()),
+          h("div",{style:{flex:1}},
+            h("div",{className:"lname"},l.n),
+            lems.length>0?h("div",{dir:l.c==="ar"?"rtl":"ltr"},...lems.map((m,i)=>h(React.Fragment,{key:i},i>0&&h("span",{className:"lsep"},"·"),h("span",{className:"lemma"+(l.c==="ar"?" rtl-text":"")},m)))):h("span",{className:"gap-m"},"∅ lexikalische Lücke")
+          )
+        );
+      })
+    ),
+    data.ej?.length>0&&h("div",{className:"card"},
+      h("p",{className:"sec"},"Verwendungsbeispiele"),
+      h("ul",{style:{margin:0,paddingLeft:"1.2rem",fontSize:"13px",color:"#666",lineHeight:"2.1"}},data.ej.map((e,i)=>h("li",{key:i},e)))
+    ),
+    h("div",{style:{display:"flex",gap:"8px",paddingBottom:"1rem",flexWrap:"wrap"}},
+      h("button",{className:"bp",onClick:onStartEval},"Bewertung starten →"),
+      h("button",{className:"bs",onClick:onAllCorrect},"✓ Alles korrekt — speichern")
+    )
+  );
+}
+
+function EvalView({word,data,ev,setEv,activeLangs,setActiveLangs,onSubmit,onBack}){
+  const [tipInfo,setTipInfo]=useState({lc:null,p:null});
+
+  const upd=(k,f,v)=>setEv(p=>({...p,[k]:{...p[k],[f]:v}}));
+
+  const handleLangChange=newLangs=>{
+    setActiveLangs(newLangs);
+    setEv(prev=>{
+      const next={...prev};
+      newLangs.forEach(l=>{if(!next[l])next[l]={r:null,c:"",pts:[]};});
+      return next;
+    });
+  };
+
+  const toggleLangP=(lc,p)=>{
+    setTipInfo(t=>(t.lc===lc&&t.p===p)?{lc:null,p:null}:{lc,p});
+    setEv(prev=>{
+      const cur=(prev[lc]?.pts||[]);
+      return {...prev,[lc]:{...prev[lc],pts:cur.includes(p)?cur.filter(x=>x!==p):[...cur,p]}};
+    });
+  };
+
+  const RR=({val,onChange,opts})=>h("div",{className:"rbrow"},opts.map(o=>h("button",{key:o.v,className:"rb"+(val===o.v?" "+o.v:""),onClick:()=>onChange(o.v)},o.l)));
+  const defOpts=[{v:"ok",l:"✓ Korrekt"},{v:"dud",l:"⚠ Teilweise"},{v:"mal",l:"✗ Falsch"}];
+  const langOpts=[{v:"ok",l:"✓ Korrekt"},{v:"dud",l:"⚠ Fraglich"},{v:"mal",l:"✗ Falsch"},{v:"gap",l:"∅ Lücke"}];
+  const needsProbs=r=>r==="dud"||r==="mal"||r==="gap";
+
+  return h("div",null,
+    h("div",{className:"card"},
+      h("div",{className:"word-hero"},data.art!=="—"&&h("span",{className:"art"},data.art),h("span",{className:"wbig"},word),h("span",{className:"synset"},data.s),h("span",{className:"pos-b"},data.pos)),
+      h("p",{className:"def-en"},data.def_en)
+    ),
+    h(LangSelector,{activeLangs,setActiveLangs:handleLangChange}),
+    h("div",{className:"card"},
+      h("p",{className:"sec"},"Schritt 1 — Äquivalente bewerten"),
+      activeLangs.map(lc=>{
+        const li=TLANGS.find(l=>l.c===lc);
+        const lems=(data.eq||{})[lc]||[];
+        const e=ev[lc]||{r:null,c:"",pts:[]};
+        return h("div",{className:"lang-row",key:lc},
+          h("div",{className:"lcode"},lc.toUpperCase()),
+          h("div",{style:{flex:1}},
+            h("div",{className:"lname"},li?.n),
+            lems.length>0
+              ?h("div",null,...lems.map((m,i)=>h(React.Fragment,{key:i},i>0&&h("span",{className:"lsep"},"·"),h("span",{className:"lemma"},m))))
+              :h("span",{className:"gap-m"},"∅ kein Äquivalent verzeichnet"),
+            h(RR,{val:e.r,onChange:v=>upd(lc,"r",v),opts:langOpts}),
+            needsProbs(e.r)&&h("div",{style:{marginTop:"8px"}},
+              h("p",{style:{fontSize:"11px",color:"#888",margin:"0 0 5px",letterSpacing:".04em"}},"Welcher Problemtyp? (anklicken für Erklärung)"),
+              h("div",{style:{display:"flex",gap:"5px",flexWrap:"wrap"}},
+                ISSUETYPES.map(p=>h("button",{key:p,
+                  className:"ibu"+((e.pts||[]).includes(p)?" sel":""),
+                  onClick:()=>toggleLangP(lc,p)
+                },p))
+              ),
+              tipInfo.lc===lc&&tipInfo.p&&h("div",{style:{
+                marginTop:"7px",padding:"9px 11px",background:"#f0f9ff",
+                border:"1px solid #bae6fd",borderRadius:"7px",
+                fontSize:"12px",color:"#0369a1",lineHeight:"1.65"
+              }},
+                h("strong",{style:{display:"block",marginBottom:"3px",fontSize:"12px"}},tipInfo.p),
+                TIPODESC[tipInfo.p]||""
+              )
+            ),
+            h("textarea",{className:"cmt",rows:2,placeholder:"Anmerkung (optional)…",value:e.c||"",onChange:ev2=>upd(lc,"c",ev2.target.value)})
+          )
+        );
+      })
+    ),
+    h("div",{className:"two-col"},
+      h("div",{className:"card"},
+        h("p",{className:"sec"},"Schritt 2 — Definitionsqualität"),
+        h("p",{style:{fontSize:"13px",color:"#666",fontStyle:"italic",margin:"0 0 8px"}},data.def_en),
+        h(RR,{val:ev._de?.r,onChange:v=>upd("_de","r",v),opts:defOpts}),
+        h("textarea",{className:"cmt",rows:2,placeholder:"Was fehlt oder stimmt nicht?",value:ev._de?.c||"",onChange:e=>upd("_de","c",e.target.value)})
+      ),
+      h("div",{className:"card"},
+        h("p",{className:"sec"},"Schritt 3 — Beispielsätze"),
+        h("ul",{style:{margin:"0 0 8px",paddingLeft:"1.2rem",fontSize:"12px",color:"#666",lineHeight:"2"}},(data.ej||[]).map((e,i)=>h("li",{key:i},e))),
+        h(RR,{val:ev._ej?.r,onChange:v=>upd("_ej","r",v),opts:[{v:"ok",l:"✓ Adäquat"},{v:"dud",l:"⚠ Wenige"},{v:"mal",l:"✗ Fehlend"}]}),
+        h("textarea",{className:"cmt",rows:2,placeholder:"Fehlen wichtige Kontexte?",value:ev._ej?.c||"",onChange:e=>upd("_ej","c",e.target.value)})
+      )
+    ),
+    h("div",{className:"card"},
+      h("p",{className:"sec"},"Freie Anmerkungen"),
+      h("textarea",{className:"cmt",rows:3,placeholder:"Weitere Beobachtungen zu Übersetzung oder Lexikografie…",value:ev._obs||"",onChange:e=>setEv(p=>({...p,_obs:e.target.value}))})
+    ),
+    h("div",{style:{display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap",paddingBottom:"1rem"}},
+      h("button",{className:"bp",onClick:onSubmit},"Auswertung anzeigen →"),
+      h("button",{className:"bs",onClick:onBack},"← Zurück")
+    )
+  );
+}
+
+function FeedbackView({word,data,ev,feedback,activeLangs,student,onSave,saved,onReset,onBack}){
+  const{score,hits,misses,fps}=feedback;
+  const col=sCol(score);
+  const langLabels=activeLangs.map(c=>TLANGS.find(l=>l.c===c)?.n||c).join(", ");
+  const [missEval,setMissEval]=useState({});
+  const setME=(i,field,val)=>setMissEval(p=>({...p,[i]:{...p[i],[field]:val}}));
+
+  return h("div",null,
+    h("div",{className:"card"},
+      h("p",{className:"sec"},"Auswertung — "+(data.art!=="—"?data.art+" ":"")+word+(student?" · "+student:"")),
+      h("p",{style:{fontSize:"12px",color:"#aaa",margin:"0 0 12px"}},"Bewertete Sprachen: "+langLabels),
+      h("div",{className:"score-row"},
+        h("div",null,h("p",{className:"sn",style:{color:col}},score),h("p",{style:{fontSize:"13px",color:"#888",margin:"2px 0 0"}},"/10 Punkte")),
+        h("p",{style:{flex:1,fontSize:"14px",lineHeight:"1.7",margin:0,color:"#666"}},data.n)
+      )
+    ),
+    hits.length>0&&h("div",{className:"card"},
+      h("p",{className:"sec"},"Richtig erkannte Probleme ("+hits.length+")"),
+      hits.map(({prob},i)=>h("div",{className:"fb-row",key:i},
+        h("div",{className:"dot",style:{background:"#f0fdf4",borderColor:"#86efac"}}),
+        h("div",{style:{flex:1}},h("strong",null,TIPOLABEL[prob.t]||prob.t),h("span",{style:{color:"#888"}}," · "+prob.l.join(", ")),h("p",{style:{margin:"3px 0 0",fontSize:"13px",color:"#666"}},prob.d))
+      ))
+    ),
+    misses.length>0&&h("div",{className:"card"},
+      h("p",{className:"sec"},"Nicht erkannte Probleme ("+misses.length+") — bitte selbst bewerten"),
+      h("p",{style:{fontSize:"12px",color:"#888",margin:"0 0 12px",fontStyle:"italic"}},"Diese Probleme wurden von der KI vorgeschlagen. Stimmen Sie zu? Die KI kann sich auch irren."),
+      misses.map((prob,i)=>{
+        const me=missEval[i]||{};
+        return h("div",{className:"prc",key:i,style:{marginBottom:"10px"}},
+          h("p",{className:"prt"},(TIPOLABEL[prob.t]||prob.t)+" · Schweregrad: "+prob.g+" · Sprachen: "+prob.l.join(", ")),
+          h("p",{className:"prd"},prob.d),
+          h("div",{className:"miss-eval"},
+            h("span",{style:{fontSize:"11px",color:"#888",alignSelf:"center",marginRight:"4px"}},"Ihre Einschätzung:"),
+            h("button",{className:"meb"+(me.v==="yes"?" yes":""),onClick:()=>setME(i,"v","yes")},"✓ Stimme zu"),
+            h("button",{className:"meb"+(me.v==="part"?" part":""),onClick:()=>setME(i,"v","part")},"⚠ Teilweise"),
+            h("button",{className:"meb"+(me.v==="no"?" no":""),onClick:()=>setME(i,"v","no")},"✗ Nicht einverstanden")
+          ),
+          me.v&&h("textarea",{
+            className:"cmt",rows:2,
+            placeholder:me.v==="no"?"Warum nicht? Was würden Sie stattdessen sagen?":me.v==="part"?"Was stimmt, was nicht?":"Optional: Anmerkung…",
+            value:me.c||"",
+            onChange:e=>setME(i,"c",e.target.value)
+          }),
+          me.v==="no"&&h("p",{className:"miss-note"},"Ihr Widerspruch wird beim Speichern mitexportiert — wertvoll für die Verbesserung der Einträge.")
+        );
+      })
+    ),
+    fps.length>0&&h("div",{className:"card"},
+      h("p",{className:"sec"},"Falsch markiert"),
+      fps.map((l,i)=>h("div",{className:"fb-row",key:i},
+        h("div",{className:"dot",style:{background:"#fef2f2",borderColor:"#fca5a5"}}),
+        h("span",null,"'"+l.toUpperCase()+"' als problematisch markiert — für '"+word+"' ist kein gravierendes Problem in dieser Sprache dokumentiert.")
+      ))
+    ),
+    h("div",{className:"card"},
+      h("p",{className:"sec"},"Eigene Bewertungen"),
+      h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:"8px"}},
+        activeLangs.map(lc=>{
+          const e=ev[lc];if(!e?.r)return null;
+          const li=TLANGS.find(l=>l.c===lc);
+          const colors={ok:"#16a34a",dud:"#d97706",mal:"#dc2626",gap:"#d97706"};
+          const labels={ok:"Korrekt",dud:"Fraglich",mal:"Falsch",gap:"Lücke"};
+          return h("div",{key:lc,style:{border:"1px solid #e8e5de",borderRadius:"8px",padding:"8px 10px"}},
+            h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}},
+              h("span",{style:{fontSize:"11px",fontWeight:600,color:"#888"}},lc.toUpperCase()+" — "+li?.n),
+              h("span",{style:{fontSize:"11px",fontWeight:600,color:colors[e.r]}},labels[e.r]||e.r)
+            ),
+            e.pts?.length>0&&h("div",{style:{display:"flex",gap:"4px",flexWrap:"wrap",margin:"4px 0"}},
+              e.pts.map(p=>h("span",{key:p,style:{fontSize:"10px",padding:"2px 7px",background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:"10px",color:"#d97706"}},p))
+            ),
+            e.c&&h("p",{style:{fontSize:"12px",color:"#666",margin:"4px 0 0",fontStyle:"italic"}},e.c)
+          );
+        })
+      ),
+      ev._obs&&h("p",{style:{marginTop:"10px",padding:"8px 10px",background:"#f9f8f5",borderRadius:"8px",fontSize:"13px",color:"#666",fontStyle:"italic",margin:"10px 0 0"}},ev._obs)
+    ),
+    h("div",{style:{display:"flex",gap:"8px",paddingBottom:"1rem",flexWrap:"wrap",alignItems:"center"}},
+      h("button",{className:"bp",onClick:onReset},"Neues Wort"),
+      h("button",{className:"bs",onClick:onBack},"← Überarbeiten"),
+      saved?h("span",{className:"save-notice"},"✓ Gespeichert")
+           :h("button",{className:"bx",onClick:()=>onSave(missEval)},"Auswertung speichern →")
+    )
+  );
+}
+
+function App(){
+  const [ltab,setLtab]=useState("lemma");
+  const [sel,setSel]=useState(null);
+  const [phase,setPhase]=useState("view");
+  const [ev,setEv]=useState({});
+  const [activeLangs,setActiveLangs]=useState([]);
+  const [student,setStudent]=useState(()=>{try{return localStorage.getItem("lexieval_student")||"";}catch(e){return "";}});
+  const [fb,setFb]=useState(null);
+  const [saved,setSaved]=useState(false);
+  const [viewResult,setViewResult]=useState(null);
+  const [vRefresh,setVRefresh]=useState(0);
+  const [quickSaved,setQuickSaved]=useState(false);
+
+  const saveStudent=v=>{setStudent(v);try{localStorage.setItem("lexieval_student",v);}catch(e){}};
+
+  const handleSel=w=>{setSel(w);setPhase("view");setEv({});setFb(null);setSaved(false);setViewResult(null);setQuickSaved(false);setActiveLangs([]);};
+
+  const startEval=()=>{
+    const langs=activeLangs.length>0?activeLangs:TLANGS.map(l=>l.c);
+    const init={};
+    langs.forEach(l=>{init[l]={r:null,c:"",pts:[]};});
+    init._de={r:null,c:""};init._ej={r:null,c:""};init._obs="";
+    setActiveLangs(langs);
+    setEv(init);setPhase("eval");
+  };
+
+  const handleAllCorrect=()=>{
+    const langs=activeLangs.length>0?activeLangs:TLANGS.map(l=>l.c);
+    const mockEv={};
+    langs.forEach(l=>{mockEv[l]={r:"ok",c:"",pts:[]};});
+    mockEv._de={r:"ok",c:""};mockEv._ej={r:"ok",c:""};mockEv._obs="";
+    const mockFb=computeFeedback(WD[sel],mockEv,langs);
+    saveResult({id:Date.now().toString(),ts:new Date().toISOString(),student:student.trim()||null,word:sel,score:mockFb.score,activeLangs:langs,ev:mockEv,hits:mockFb.hits,misses:mockFb.misses,fps:mockFb.fps});
+    setQuickSaved(true);setVRefresh(v=>v+1);
+  };
+
+  const submit=()=>{setFb(computeFeedback(WD[sel],ev,activeLangs));setPhase("feedback");setSaved(false);};
+
+  const handleSave=(missEval)=>{
+    saveResult({id:Date.now().toString(),ts:new Date().toISOString(),student:student.trim()||null,word:sel,score:fb.score,activeLangs,ev,hits:fb.hits,misses:fb.misses,fps:fb.fps,missEval:missEval||{}});
+    setSaved(true);setVRefresh(v=>v+1);
+  };
+
+  const handleViewResult=r=>{setViewResult(r);setLtab("verlauf");};
+  const data=sel?WD[sel]:null;
+
+  const nameBar=h("div",{style:{display:"flex",alignItems:"center",gap:"8px",padding:"10px 1.25rem 0"}},
+    h("label",{style:{fontSize:"11px",color:"#888",whiteSpace:"nowrap",letterSpacing:".04em",textTransform:"uppercase",fontWeight:600}},"Dein Name:"),
+    h("input",{type:"text",placeholder:"Vorname Nachname (wird gespeichert)",value:student,onChange:e=>saveStudent(e.target.value),
+      style:{flex:1,maxWidth:"260px",padding:"5px 9px",fontSize:"13px",border:"1px solid #ddd",borderRadius:"7px",fontFamily:"inherit",background:"#fff",color:"#111"}})
+  );
+
+  return h("div",{id:"wrap"},
+    h("div",{id:"lp"},
+      h("div",{id:"tabs"},
+        h("button",{className:"tab"+(ltab==="lemma"?" on":""),onClick:()=>setLtab("lemma")},"Lemmata"),
+        h("button",{className:"tab"+(ltab==="esmas"?" on":""),onClick:()=>setLtab("esmas")},"ESMAS-Konzepte"),
+        h("button",{className:"tab"+(ltab==="verlauf"?" on":""),onClick:()=>setLtab("verlauf")},"Verlauf")
+      ),
+      h("div",{id:"lb"},
+        ltab==="lemma"&&h(LemmaSearch,{onSelect:handleSel,sel}),
+        ltab==="esmas"&&h(ESMASBrowser,{onSelect:handleSel,sel}),
+        ltab==="verlauf"&&h(VerlaufPanel,{onView:handleViewResult,activeId:viewResult?.id,refresh:vRefresh})
+      )
+    ),
+    h("div",{id:"rp"},
+      nameBar,
+      viewResult&&ltab==="verlauf"
+        ?h("div",{className:"detail-panel",style:{marginTop:"1rem"}},
+            h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}},
+              h("p",{className:"sec",style:{margin:0}},"Archivierte Auswertung"),
+              h("button",{className:"bs",style:{padding:"4px 10px",fontSize:"12px"},onClick:()=>setViewResult(null)},"× Schließen")
+            ),
+            WD[viewResult.word]&&h(FeedbackView,{
+              word:viewResult.word,data:WD[viewResult.word],ev:viewResult.ev,
+              feedback:computeFeedback(WD[viewResult.word],viewResult.ev,viewResult.activeLangs||TLANGS.map(l=>l.c)),
+              activeLangs:viewResult.activeLangs||TLANGS.map(l=>l.c),
+              student:viewResult.student||"",
+              onSave:()=>{},saved:true,onReset:()=>setViewResult(null),onBack:()=>setViewResult(null)
+            })
+          )
+        :phase==="view"&&(data
+            ?h("div",null,
+                h(WordCard,{word:sel,data,onStartEval:startEval,onAllCorrect:handleAllCorrect}),
+                quickSaved&&h("p",{style:{fontSize:"13px",color:"#16a34a",padding:"0 0 1rem",fontWeight:500}},"✓ Als korrekt gespeichert")
+              )
+            :h("div",{className:"info-panel",style:{marginTop:"1rem"}},
+                h("p",{style:{fontFamily:"Georgia,serif",fontSize:"22px",fontWeight:400,color:"#1a2e4a",margin:"0 0 4px"}},"LexiEval DE"),
+                h("p",{style:{fontSize:"13px",color:"#2563eb",margin:"0 0 16px",fontStyle:"italic"}},"Ein KI-gestütztes multilinguales Evaluationswörterbuch · Deutsch als Ausgangssprache"),
+                h("p",{style:{fontSize:"13px",color:"#444",lineHeight:"1.7",margin:"0 0 14px"}},"LexiEval DE wurde entwickelt, um Studierende der Lexikografie und Übersetzungswissenschaft beim kritischen Umgang mit KI-generierten Wörterbuchdaten zu schulen. Die Einträge entstanden durch ein systematisches Mapping zwischen dem ",h("strong",null,"ESMAS-DE-Itinerario")," (ontologische Wortfeldklassifikation) und dem ",h("strong",null,"Open Multilingual WordNet")," — generiert mit ",h("strong",null,"claude.ai")," (Anthropic). Sie sind Arbeitsmaterial, kein fertiges Wörterbuch."),
+                h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"14px"}},
+                  h("div",{style:{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:"8px",padding:"10px 12px"}},
+                    h("p",{style:{fontSize:"11px",fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",color:"#0369a1",margin:"0 0 5px"}},"Semasiologisch"),
+                    h("p",{style:{fontSize:"12px",color:"#444",margin:0}},"Wort eingeben → Analysekarte mit Äquivalenten, Problemen, Bewertungsformular")
+                  ),
+                  h("div",{style:{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:"8px",padding:"10px 12px"}},
+                    h("p",{style:{fontSize:"11px",fontWeight:600,letterSpacing:".06em",textTransform:"uppercase",color:"#166534",margin:"0 0 5px"}},"Onomasiologisch"),
+                    h("p",{style:{fontSize:"12px",color:"#444",margin:0}},"Konzept wählen (ESMAS-Welt → Route) → Wortliste → Analysekarte")
+                  )
+                ),
+                h("p",{style:{fontSize:"11px",color:"#888",borderTop:"1px solid #e8e5de",paddingTop:"10px",lineHeight:"1.6"}},"⚠ ",h("strong",null,"Hinweis zur Datenherkunft:")," Die Synset-IDs und Äquivalente sind KI-generiert (claude.ai) — kein direkter Zugriff auf WordNet. Bitte gegen OMW verifizieren: ",h("a",{href:"https://compling.upol.cz/ntumc/cgi-bin/wn-gridx.cgi?gridmode=grid",style:{color:"#2563eb"}},"compling.upol.cz"),". Arabisch (AR) und Russisch (RU) sind für ausgewählte Einträge verfügbar (★-Wörter)."),
+                h("p",{style:{fontSize:"12px",color:"#aaa",marginTop:"12px"}},"← Wort aus der Lemmatasuche oder den ESMAS-Konzepten auswählen · ★ = vollständiges Analysedossier (50 Einträge)")
+              )
+          ),
+      !viewResult&&phase==="eval"&&data&&h(EvalView,{word:sel,data,ev,setEv,activeLangs,setActiveLangs,onSubmit:submit,onBack:()=>setPhase("view")}),
+      !viewResult&&phase==="feedback"&&fb&&h(FeedbackView,{word:sel,data,ev,feedback:fb,activeLangs,student,onSave:handleSave,saved,onReset:()=>{setSel(null);setPhase("view");},onBack:()=>setPhase("eval")})
+    )
+  );
+}
+
+ReactDOM.render(h(App),document.getElementById("app"));
+</script></html>
